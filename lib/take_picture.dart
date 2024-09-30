@@ -7,13 +7,13 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:site_connect/providers.dart';
 
 
 
 class TakePictureScreen extends StatefulWidget {
-  final CameraDescription camera;
-  const TakePictureScreen({super.key, required this.camera});
-
+  const TakePictureScreen({super.key});
 
   @override
   _TakePictureScreenState createState() => _TakePictureScreenState();
@@ -22,11 +22,13 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   final List<File> _capturedImages = [];
-
+  late Providers providers;
+  
   @override
   void initState() {
     super.initState();
-    _controller = CameraController(widget.camera, ResolutionPreset.high);
+    providers = Provider.of<Providers>(context, listen: false);
+    _controller = CameraController(providers.camera, ResolutionPreset.high);
     _initializeControllerFuture = _controller.initialize();
   }
 
