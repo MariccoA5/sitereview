@@ -1,0 +1,35 @@
+name: site_connect
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  image_picker: ^0.8.5+3  # For accessing camera and gallery
+  image: ^4.0.5  # For image processing
+  path_provider: ^2.0.11  # For saving files to the device
+  permission_handler: ^10.2.0  # For requesting permissions
+  camera: ^0.11.0+2  # For accessing the camera
+  cupertino_icons: ^1.0.8
+  geolocator: ^9.0.2
+  geocoding: ^2.0.4
+  intl: ^0.17.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+
+  
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+  
