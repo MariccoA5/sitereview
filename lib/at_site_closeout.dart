@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:site_connect/providers.dart';
 import 'package:site_connect/take_picture.dart';
-import 'package:supabase/supabase.dart';
+
 
 class SiteCloseoutForm extends StatefulWidget {
   const SiteCloseoutForm({super.key});
@@ -70,18 +70,17 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
     final response = await SupabaseClient
         .from('site_closeout')
         .insert({
-          'contractor': contractor,
-          'techs_initals': techInitials,
-          'created_at': date,
-          'main_checkbox': mainCheckbox,
-          'main_commen': mainComments,
-          'iai_checkbox': iaiCheckbox,
-          'iai_comments': iaiComments,
-          'oosw_checkbc': ooswCheckbox,
-          'oosw_commer': ooswComments,
-          'photos': _photoUrl, // Assuming you store the URL of the uploaded photo
-        });
-  
+      'contractor': contractor,
+      'techs_initals': techInitials,
+      'created_at': date,
+      'main_checkbox': mainCheckbox,
+      'main_commen': mainComments,
+      'iai_checkbox': iaiCheckbox,
+      'iai_comments': iaiComments,
+      'oosw_checkbc': ooswCheckbox,
+      'oosw_commer': ooswComments,
+      'photos': _photoUrl, // Assuming you store the URL of the uploaded photo
+    });
   }
 
   @override
@@ -95,6 +94,31 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Display the image from assets at the top
+            Center(
+              child: Image.asset(
+                'ATLogo.png', // Make sure this path matches your actual image path in pubspec.yaml
+                height: 100, // Adjust the size based on your needs
+                fit: BoxFit.contain,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Site Information header
+            const Text(
+              'Site Information',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _contractorController,
+              decoration: InputDecoration(
+                labelText: 'Site Number',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+
             // Contractor field
             TextField(
               controller: _contractorController,
@@ -109,19 +133,31 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
             TextField(
               controller: _techInitialsController,
               decoration: InputDecoration(
-                labelText: 'Tech Initials',
+                labelText: 'Tech\'s Initials',
                 border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
 
             // Date Picker
-            Text("Date: ${_selectedDate.toLocal()}"),
-            ElevatedButton(
-              onPressed: () => _selectDate(context),
-              child: const Text('Select Date'),
+            Row(
+              children: [
+                Text("Date: ${_selectedDate.toLocal().toString().split(' ')[0]}"),
+                const SizedBox(width: 20),
+                ElevatedButton(
+                  onPressed: () => _selectDate(context),
+                  child: const Text('Select Date'),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
+
+            // Main SOW header
+            const Text(
+              'Main SOW:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
 
             // Questions with Checkboxes and Comments
             ListView.builder(
@@ -132,9 +168,9 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Question ${index + 1}:'),
+                    // Example of customized checkbox tile
                     CheckboxListTile(
-                      title: const Text('Check this box'),
+                      title: Text('Task ${index + 1}'),
                       value: _checkboxValues[index],
                       onChanged: (bool? value) {
                         setState(() {
@@ -142,6 +178,9 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
                         });
                       },
                     ),
+                    const SizedBox(height: 10),
+
+                    // Comment section for each checkbox
                     TextField(
                       controller: _commentControllers[index],
                       decoration: InputDecoration(
@@ -159,6 +198,9 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
             // Submit button
             ElevatedButton(
               onPressed: _submitForm,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+              ),
               child: const Text('Submit Form'),
             ),
           ],
