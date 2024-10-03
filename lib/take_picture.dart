@@ -13,7 +13,9 @@ import 'package:site_connect/providers.dart';
 
 
 class TakePictureScreen extends StatefulWidget {
-  const TakePictureScreen({super.key});
+  
+  final List<File>? existingImages;
+  const TakePictureScreen({super.key, this.existingImages});
 
   @override
   _TakePictureScreenState createState() => _TakePictureScreenState();
@@ -21,7 +23,7 @@ class TakePictureScreen extends StatefulWidget {
 class _TakePictureScreenState extends State<TakePictureScreen> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
-  final List<File> _capturedImages = [];
+  List<File> _capturedImages = [];
   late Providers providers;
   
   @override
@@ -30,6 +32,9 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
     providers = Provider.of<Providers>(context, listen: false);
     _controller = CameraController(providers.camera, ResolutionPreset.high);
     _initializeControllerFuture = _controller.initialize();
+    if (widget.existingImages != null) {
+      _capturedImages = List.from(widget.existingImages!);
+    }
   }
 
   @override
@@ -187,48 +192,79 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
     return '${directory.path}/processed_image_${DateTime.now().millisecondsSinceEpoch}.png';
   }
 
+
+  void _removeImage(File image) {
+    setState(() {
+      _capturedImages.remove(image);
+    });
+  }
+
+  Future<void> _finishAndReturnImages() async {
+    // Pop the screen and return the captured images
+    Navigator.pop(context, _capturedImages);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Take Picture')),
+      appBar: AppBar(title: const Text('Take Picture'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.check),
+          onPressed: _finishAndReturnImages,
+        ),
+      ]),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            FutureBuilder<void>(
-              future: _initializeControllerFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 400,
-                      child: CameraPreview(_controller),
-                    ),
-                  );
-                } else {
-                  return const Center(child: CircularProgressIndicator());
-                }
-              },
+            // Camera Preview
+            Container(
+              color: Colors.black,
+              child: FutureBuilder<void>(
+                future: _initializeControllerFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        width: MediaQuery.sizeOf(context).width,
+                        height: MediaQuery.sizeOf(context).height * 0.61,
+                        child: CameraPreview(_controller),
+                      ),
+                    );
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                },
+              ),
             ),
+
+            // Capture Button
             ElevatedButton(
               onPressed: _captureAndProcessImage,
-              child: const Text('Capture Image'),
+              child: const Icon(
+                color: Colors.black,
+                Icons.camera_alt,
+              ),
             ),
+
+            // Display Captured Images
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     ConstrainedBox(
                       constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height,
+                        maxHeight: MediaQuery.sizeOf(context).height * 0.15,
                       ),
                       child: GridView.builder(
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
+                          crossAxisCount: 1,
                           crossAxisSpacing: 4,
                           mainAxisSpacing: 4,
                         ),
@@ -239,7 +275,10 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => ImagePreviewScreen(image: _capturedImages[index]),
+                                  builder: (context) => ImagePreviewScreen(
+                                    image: _capturedImages[index],
+                                    onDelete: () => _removeImage(_capturedImages[index]),
+                                  ),
                                 ),
                               );
                             },
@@ -258,25 +297,40 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
     );
   }
 }
+
 class ImagePreviewScreen extends StatelessWidget {
   final File image;
-  const ImagePreviewScreen({super.key, required this.image});
+  final VoidCallback onDelete;
 
+  const ImagePreviewScreen({super.key, required this.image, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    final double screenHeight = MediaQuery.sizeOf(context).height;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Preview')),
+      appBar: AppBar(
+        title: const Text('Preview'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              onDelete(); // This will trigger the delete function in the parent
+              Navigator.pop(context); // Close the preview after deletion
+            },
+          ),
+        ],
+      ),
       body: SizedBox(
-          width: screenWidth,
-          height: screenHeight,
+        width: screenWidth,
+        height: screenHeight,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Center(child: Image.file(image)),
-        )),
+        ),
+      ),
     );
   }
 }
+

@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: SiteCloseoutForm(), // No need to pass supabaseClient or camera here
+      home: const SiteCloseoutForm(), // No need to pass supabaseClient or camera here
     );
   }
 }

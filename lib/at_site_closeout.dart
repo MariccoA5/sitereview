@@ -1,6 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:site_connect/providers.dart';
+
+import 'package:site_connect/share_site.dart';
 import 'package:site_connect/take_picture.dart';
 
 
@@ -13,21 +15,60 @@ class SiteCloseoutForm extends StatefulWidget {
 
 class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
   // Define controllers for text fields
+  final TextEditingController _siteNumberController = TextEditingController();
   final TextEditingController _contractorController = TextEditingController();
   final TextEditingController _techInitialsController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
 
   // Define controllers and checkboxes for the 3 main sections
   final List<TextEditingController> _commentControllers = List.generate(3, (index) => TextEditingController());
-  final List<bool> _checkboxValues = List.generate(3, (index) => false);
+  final List<bool> _checkboxValues = List.generate(8, (index) => false);
+  final List<bool> _checkboxValues2 = List.generate(8, (index) => false);
+  final List<bool> _checkboxValues3 = List.generate(10, (index) => false);
 
   // Image management (You mentioned the photos are handled separately)
-  String _photoUrl = ''; // Replace with actual photo URL logic
+  List<File> _capturedPhotos = []; // Replace with actual photo URL logic
+
+  List<String> checkboxQuestions = [
+      'Herbicide applied to compound and exterior compound perimeter',
+      'Small trash items removed from site = (1) 55 gal trash bag',
+      'Vegetation removal & herbicide application around utilities and parking area\n\t- Glyphosate spray rate: 3.22 lb a.e./A. (glyphosate)\n\t- Glyphosate spray height: no higher than twelve (12) inches from ground level',
+      'Marking dye used in herbicide application', 
+      'Leaves blown/raked out of compound', 
+      'Access road serviced (out 3’ back on both sides of the road and herbicide applied)', 
+      'Mow guy paths from compound to anchor pens, where accessible', 
+      'Weed removal/herbicide application on guy pens/anchor points'
+    ];
+
+  List<String> checkboxQuestions2 = [
+      'Site’s security compromised (see comments)',
+      'Site ID Sign Missing or illegible/faded',
+      'Major fence damage to compound or guy compound',
+      'Compound or Guy Compound washed out',
+      'Access road washed out',
+      'Vandalism (see comments)',
+      'Bird nest present',
+      'Utilities down or damaged (see comments)'
+    ];
+
+  List<String> checkboxQuestions3 = [
+      'Trees within 5’ of tower',
+      'Trees within 5’ of compound',
+      'Excessive Trash/Construction Debris',
+      'Fence/Gate Damage',
+      'Trees in guy paths',
+      'Dead/Hazard trees in danger of falling',
+      'Access Road needs attention',
+      'Cut volunteer trees/brush out of screening landscaping',
+      'Trees in compound/guy compounds',
+      'Cut back clear overgrown access road'
+    ];
 
   @override
   void dispose() {
     // Dispose controllers to avoid memory leaks
     _contractorController.dispose();
+    _siteNumberController.dispose();
     _techInitialsController.dispose();
     for (var controller in _commentControllers) {
       controller.dispose();
@@ -39,8 +80,8 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      firstDate: DateTime(2024),
+      lastDate: DateTime(2100),
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -48,59 +89,95 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
       });
     }
   }
+Map<String, dynamic> _submitForm() {
+  final contractor = _contractorController.text;
+  final techInitials = _techInitialsController.text;
 
-  Future<void> _submitForm() async {
-    final providers = Provider.of<Providers>(context, listen: false);
-    final SupabaseClient = providers.supabaseClient;
-    final contractor = _contractorController.text;
-    final techInitials = _techInitialsController.text;
-    final date = _selectedDate.toIso8601String();
+  final mainCheckbox = _checkboxValues;
+  final mainComments = _commentControllers[0].text;
+  final iaiCheckbox = _checkboxValues2; 
+  final iaiComments = _commentControllers[1].text;
+  final ooswCheckbox = _checkboxValues3; 
+  final ooswComments = _commentControllers[2].text;
+  final selectedDate = _selectedDate.toString(); 
+  return {
+    'contractor': contractor,
+    'techInitials': techInitials,
+    'mainCheckbox': mainCheckbox,
+    'mainComments': mainComments,
+    'iaiCheckbox': iaiCheckbox,
+    'iaiComments': iaiComments,
+    'ooswCheckbox': ooswCheckbox,
+    'ooswComments': ooswComments,
+    'selectedDate': selectedDate,
+    'photos': _capturedPhotos,
+  };
+}
 
-    // Map the comment and checkbox values
-    final mainCheckbox = _checkboxValues[0];
-    final mainComments = _commentControllers[0].text;
 
-    final iaiCheckbox = _checkboxValues[1];
-    final iaiComments = _commentControllers[1].text;
-
-    final ooswCheckbox = _checkboxValues[2];
-    final ooswComments = _commentControllers[2].text;
-
-    // Insert data into Supabase
-    final response = await SupabaseClient
-        .from('site_closeout')
-        .insert({
-      'contractor': contractor,
-      'techs_initals': techInitials,
-      'created_at': date,
-      'main_checkbox': mainCheckbox,
-      'main_commen': mainComments,
-      'iai_checkbox': iaiCheckbox,
-      'iai_comments': iaiComments,
-      'oosw_checkbc': ooswCheckbox,
-      'oosw_commer': ooswComments,
-      'photos': _photoUrl, // Assuming you store the URL of the uploaded photo
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Site Closeout Form'),
+        leading: IconButton(
+          icon: const Icon(Icons.delete),
+          onPressed: () {
+            // Clear all text fields and checkboxes
+            _contractorController.clear();
+            _techInitialsController.clear();
+            for (var controller in _commentControllers) {
+              controller.clear();
+            }
+            setState(() {
+              _selectedDate = DateTime.now();
+              _checkboxValues.fillRange(0, 8, false);
+              _checkboxValues2.fillRange(0, 8, false);
+              _checkboxValues3.fillRange(0, 10, false);
+            });
+          
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: () {
+              if (_capturedPhotos.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please take photos before saving the form.')),
+                );
+                return;
+              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PdfGeneratorPage(
+                    submitForm: _submitForm(), // Your form data here
+                   
+                  ),
+                ),
+              );
+
+              },
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Display the image from assets at the top
-            Center(
-              child: Image.asset(
-                'ATLogo.png', // Make sure this path matches your actual image path in pubspec.yaml
-                height: 100, // Adjust the size based on your needs
-                fit: BoxFit.contain,
-              ),
+              Image.asset(
+              'assets/ATLogo.png', 
+              height: 200, // Adjust the size based on your needs
+              fit: BoxFit.contain,
+
             ),
             const SizedBox(height: 20),
 
@@ -111,8 +188,8 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
             ),
             const SizedBox(height: 10),
             TextField(
-              controller: _contractorController,
-              decoration: InputDecoration(
+              controller: _siteNumberController,
+              decoration: const InputDecoration(
                 labelText: 'Site Number',
                 border: OutlineInputBorder(),
               ),
@@ -122,7 +199,7 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
             // Contractor field
             TextField(
               controller: _contractorController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Contractor',
                 border: OutlineInputBorder(),
               ),
@@ -132,7 +209,7 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
             // Tech Initials field
             TextField(
               controller: _techInitialsController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Tech\'s Initials',
                 border: OutlineInputBorder(),
               ),
@@ -153,9 +230,12 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
             const SizedBox(height: 20),
 
             // Main SOW header
-            const Text(
-              'Main SOW:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(8.0, 8, 0, 0),
+              child: Text(
+                'Main SOW:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
             const SizedBox(height: 10),
 
@@ -163,15 +243,16 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: 3,
+              itemCount: 8,
               itemBuilder: (context, index) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Example of customized checkbox tile
                     CheckboxListTile(
-                      title: Text('Task ${index + 1}'),
+                      title: Text(checkboxQuestions[index]),
                       value: _checkboxValues[index],
+  
                       onChanged: (bool? value) {
                         setState(() {
                           _checkboxValues[index] = value ?? false;
@@ -179,40 +260,138 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
                       },
                     ),
                     const SizedBox(height: 10),
-
-                    // Comment section for each checkbox
-                    TextField(
-                      controller: _commentControllers[index],
-                      decoration: InputDecoration(
-                        labelText: 'Comments',
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 20),
+            
                   ],
                 );
               },
             ),
-
-            // Submit button
-            ElevatedButton(
-              onPressed: _submitForm,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+            TextField(
+              controller: _commentControllers[0],
+              decoration: const InputDecoration(
+                labelText: 'Comments',
+                border: OutlineInputBorder(),
               ),
-              child: const Text('Submit Form'),
+              maxLines: 4,
             ),
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 20),
+            const Text(
+              'Immediate Attention Issues:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 8,
+              itemBuilder: (context, index) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Example of customized checkbox tile
+                    CheckboxListTile(
+                      title: Text(checkboxQuestions2[index]),
+                      value: _checkboxValues2[index],
+  
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _checkboxValues2[index] = value ?? false;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+            
+                  ],
+                );
+              },
+            ),
+            TextField(
+              controller: _commentControllers[1],
+              decoration: const InputDecoration(
+                labelText: 'Comments',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 4,
+            ),
+            const SizedBox(height: 20),
+            const Divider(),
+            const Text(
+              'OOSW that needs attention:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 10,
+              itemBuilder: (context, index) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Example of customized checkbox tile
+                    CheckboxListTile(
+                      title: Text(checkboxQuestions3[index]),
+                      value: _checkboxValues3[index],
+  
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _checkboxValues3[index] = value ?? false;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10),
+            
+                  ],
+                );
+              },
+            ),
+            TextField(
+              controller: _commentControllers[2],
+              decoration: const InputDecoration(
+                labelText: 'Comments',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 4,
+            ),
+            const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 20),
+            // Photo upload section
+            // Display text containing the photo count from take_picture.dart, should be updated to reflect the actual number of photos taken
+            const Text(
+              'Number of photos taken: 0'
+            ),
+
+            const SizedBox(height: 50),
+            
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to the photo upload screen
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) => const TakePictureScreen()));
-        },
-        child: const Icon(Icons.camera_alt),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          // Navigate to TakePictureScreen and pass existing images
+          
+          final result = await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => TakePictureScreen(
+                existingImages: _capturedPhotos ?? [], // Pass existing photos to the screen
+              ),
+            ),
+          );
+
+            if (result != null && result is List<File>) {
+              setState(() {
+                // Update _capturedPhotos with the returned images (new + existing)
+                _capturedPhotos = result;
+              });
+            }
+            },
+            child: const Icon(Icons.camera_alt),
+          ),
+      
     );
   }
 }
