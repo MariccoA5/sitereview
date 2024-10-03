@@ -100,6 +100,7 @@ Map<String, dynamic> _submitForm() {
   final ooswCheckbox = _checkboxValues3; 
   final ooswComments = _commentControllers[2].text;
   final selectedDate = _selectedDate.toString(); 
+
   return {
     'contractor': contractor,
     'techInitials': techInitials,
@@ -111,6 +112,7 @@ Map<String, dynamic> _submitForm() {
     'ooswComments': ooswComments,
     'selectedDate': selectedDate,
     'photos': _capturedPhotos,
+    'siteNumber': _siteNumberController.text,
   };
 }
 
@@ -226,6 +228,11 @@ Map<String, dynamic> _submitForm() {
                   child: const Text('Select Date'),
                 ),
               ],
+            ),
+            const SizedBox(height: 20),
+
+            Text(
+              'Number of photos taken: ${_capturedPhotos.length}',
             ),
             const SizedBox(height: 20),
 
@@ -357,12 +364,6 @@ Map<String, dynamic> _submitForm() {
             ),
             const SizedBox(height: 20),
             const Divider(),
-            const SizedBox(height: 20),
-            // Photo upload section
-            // Display text containing the photo count from take_picture.dart, should be updated to reflect the actual number of photos taken
-            const Text(
-              'Number of photos taken: 0'
-            ),
 
             const SizedBox(height: 50),
             
@@ -377,7 +378,7 @@ Map<String, dynamic> _submitForm() {
           final result = await Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => TakePictureScreen(
-                existingImages: _capturedPhotos ?? [], // Pass existing photos to the screen
+                existingImages: _capturedPhotos, // Pass existing photos to the screen
               ),
             ),
           );

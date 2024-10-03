@@ -39,4 +39,5 @@ flutter:
   assets:
     - assets/ATLogo.png
     - assets/GRC.png
+    - assets/ATC.pdf
   
