@@ -129,10 +129,13 @@ Map<String, dynamic> _submitForm() {
             // Clear all text fields and checkboxes
             _contractorController.clear();
             _techInitialsController.clear();
+            _siteNumberController.clear();
             for (var controller in _commentControllers) {
               controller.clear();
             }
             setState(() {
+              _capturedPhotos.clear();
+              _siteNumberController.clear();
               _selectedDate = DateTime.now();
               _checkboxValues.fillRange(0, 8, false);
               _checkboxValues2.fillRange(0, 8, false);
