@@ -198,9 +198,12 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
                     )
                   : const Text('Failed to load PDF'),
             ),
-            ElevatedButton(
-              onPressed: _sharePdf, // Save and share the PDF
-              child: const Text('Share/Save PDF'),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 36),
+              child: ElevatedButton(
+                onPressed: _sharePdf, // Save and share the PDF
+                child: const Text('Share/Save PDF'),
+              ),
             ),
           ],
         ),

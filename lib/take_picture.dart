@@ -241,53 +241,53 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
             ),
 
             // Capture Button
-            ElevatedButton(
-              onPressed: _captureAndProcessImage,
-              child: const Icon(
-                color: Colors.black,
-                Icons.camera_alt,
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: ElevatedButton(
+                onPressed: _captureAndProcessImage,
+                child: const Icon(
+                  color: Colors.black,
+                  Icons.camera_alt,
+                  size: 26,
+                ),
               ),
             ),
 
             // Display Captured Images
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.sizeOf(context).height * 0.15,
-                      ),
-                      child: GridView.builder(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 1,
-                          crossAxisSpacing: 4,
-                          mainAxisSpacing: 4,
-                        ),
-                        itemCount: _capturedImages.length,
-                        itemBuilder: (context, index) {
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ImagePreviewScreen(
-                                    image: _capturedImages[index],
-                                    onDelete: () => _removeImage(_capturedImages[index]),
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Image.file(_capturedImages[index], fit: BoxFit.cover),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.sizeOf(context).height * 0.15,
+                  ),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 1,
+                      crossAxisSpacing: 0,
+                      mainAxisSpacing: 3,
+                    ),
+                    itemCount: _capturedImages.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ImagePreviewScreen(
+                                image: _capturedImages[index],
+                                onDelete: () => _removeImage(_capturedImages[index]),
+                              ),
+                            ),
                           );
                         },
-                      ),
-                    ),
-                  ],
+                        child: Image.file(_capturedImages[index], fit: BoxFit.fill),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

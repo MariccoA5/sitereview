@@ -228,7 +228,7 @@ Map<String, dynamic> _submitForm() {
                 const SizedBox(width: 20),
                 ElevatedButton(
                   onPressed: () => _selectDate(context),
-                  child: const Text('Select Date'),
+                  child: const Icon(Icons.calendar_month),
                 ),
               ],
             ),
@@ -281,7 +281,7 @@ Map<String, dynamic> _submitForm() {
                 labelText: 'Comments',
                 border: OutlineInputBorder(),
               ),
-              maxLines: 4,
+              maxLines: 3,
             ),
             const SizedBox(height: 20),
             const Divider(),
@@ -323,7 +323,7 @@ Map<String, dynamic> _submitForm() {
                 labelText: 'Comments',
                 border: OutlineInputBorder(),
               ),
-              maxLines: 4,
+              maxLines: 3,
             ),
             const SizedBox(height: 20),
             const Divider(),
@@ -363,7 +363,7 @@ Map<String, dynamic> _submitForm() {
                 labelText: 'Comments',
                 border: OutlineInputBorder(),
               ),
-              maxLines: 4,
+              maxLines: 3,
             ),
             const SizedBox(height: 20),
             const Divider(),
@@ -374,27 +374,34 @@ Map<String, dynamic> _submitForm() {
         ),
       ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          // Navigate to TakePictureScreen and pass existing images
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.fromLTRB(48, 0, 0, 24),
+        child: Align(
+          alignment: Alignment.bottomLeft,
+          child: FloatingActionButton(
+            backgroundColor: Colors.black54,
+            onPressed: () async {
+              // Navigate to TakePictureScreen and pass existing images
+              
+              final result = await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => TakePictureScreen(
+                    existingImages: _capturedPhotos, // Pass existing photos to the screen
+                  ),
+                ),
+              );
           
-          final result = await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => TakePictureScreen(
-                existingImages: _capturedPhotos, // Pass existing photos to the screen
+                if (result != null && result is List<File>) {
+                  setState(() {
+                    // Update _capturedPhotos with the returned images (new + existing)
+                    _capturedPhotos = result;
+                  });
+                }
+                },
+                child: const Icon(Icons.camera_alt, color: Colors.white,),
               ),
-            ),
-          );
-
-            if (result != null && result is List<File>) {
-              setState(() {
-                // Update _capturedPhotos with the returned images (new + existing)
-                _capturedPhotos = result;
-              });
-            }
-            },
-            child: const Icon(Icons.camera_alt),
-          ),
+        ),
+      ),
       
     );
   }
