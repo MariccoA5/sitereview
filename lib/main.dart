@@ -11,7 +11,7 @@ Future<void> main() async {
     url: 'https://wtzgjzinkqbxnierobum.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0emdqemlua3FieG5pZXJvYnVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc2NzI4NDUsImV4cCI6MjA0MzI0ODg0NX0.dBzXj8ULNUenZSFAb6MsSjp9rksCVM_pB476XtQMVjU',
   );
-    final cameras = await availableCameras();
+  final cameras = await availableCameras();
   final firstCamera = cameras.first;
   final supabase = Supabase.instance.client;
 

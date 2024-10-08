@@ -10,11 +10,11 @@ dependencies:
   flutter:
     sdk: flutter
   
-  image_picker: ^0.8.5+3  # For accessing camera and gallery
-  image: ^4.0.5  # For image processing
-  path_provider: ^2.0.11  # For saving files to the device
-  permission_handler: ^10.2.0  # For requesting permissions
-  camera: ^0.11.0+2  # For accessing the camera
+  image_picker: 
+  image: ^4.0.5 
+  path_provider: ^2.0.11
+  permission_handler: ^10.2.0
+  camera: ^0.11.0+2  
   cupertino_icons: ^1.0.8
   geolocator: ^9.0.2
   geocoding: ^2.0.4
@@ -25,21 +25,22 @@ dependencies:
   printing: ^5.6.0
   share_plus: ^4.0.10
   advance_pdf_viewer: ^2.0.0
+  http: ^0.13.3
+  flutter_dotenv: ^5.1.0
+  syncfusion_flutter_pdf: ^21.2.4
+  
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
 
-
-  
-
 flutter:
   uses-material-design: true
+
   assets:
     - assets/ATLogo.png
     - assets/GRC.png
-    - assets/ATC.pdf
+    - assets/NonVisitedATC.pdf
     - assets/VisitedATC.pdf
-  
-
+    - assets/psATLogo.png

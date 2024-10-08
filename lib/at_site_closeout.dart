@@ -179,7 +179,7 @@ Map<String, dynamic> _submitForm() {
           children: [
             // Display the image from assets at the top
               Image.asset(
-              'assets/ATLogo.png', 
+              'assets/psATLogo.png', 
               height: 200, // Adjust the size based on your needs
               fit: BoxFit.contain,
 

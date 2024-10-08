@@ -1,12 +1,13 @@
 import 'dart:io';
-import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
+import 'dart:typed_data';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:pdf/pdf.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter/services.dart' show ByteData, Uint8List, rootBundle;
+import 'package:flutter/services.dart' as services;
+import 'package:image/image.dart' as img;
 
 class PdfGeneratorPage extends StatefulWidget {
   final Map<String, dynamic> submitForm; // Form data
@@ -18,160 +19,157 @@ class PdfGeneratorPage extends StatefulWidget {
 }
 
 class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
-
+  File? _pdfFile;
   PDFDocument? _pdfDocument;
   bool _isLoading = true;
-  File? _pdfFile;
 
   @override
   void initState() {
     super.initState();
-    _loadPdfFromAssets();
+    _loadPdfFromAssets(); // Load and fill the existing form from assets
   }
-
   Future<void> _loadPdfFromAssets() async {
     try {
-      // Load the PDF file from assets
-      final ByteData data = await rootBundle.load('assets/VisitedATC.pdf');
-      final Uint8List bytes = data.buffer.asUint8List();
+      // Load the PDF file from the assets directory
+      final ByteData bytes = await services.rootBundle.load('assets/NonVisitedATC.pdf');
+      final Uint8List pdfBytes = bytes.buffer.asUint8List();
 
-      // Save the PDF to the device's temporary directory
-      final output = await getTemporaryDirectory();
-      final file = File("${output.path}/VisitedATC.pdf");
-      await file.writeAsBytes(bytes);
+      // Save the downloaded PDF to a local file
+      final outputDir = await getTemporaryDirectory();
+      final localFile = File("${outputDir.path}/ACT.pdf");
 
-      // Load the saved PDF into PDFDocument for the viewer
-      PDFDocument doc = await PDFDocument.fromFile(file);
+      // Write the response data to the local file
+      await localFile.writeAsBytes(pdfBytes);
 
-      setState(() {
-        _pdfDocument = doc;
-        _isLoading = false;
-        _pdfFile = file;
-      });
+      // Now, fill the form using the downloaded file
+      _fillExistingPdfForm(localFile);
     } catch (e) {
-      print("Error loading PDF: $e");
+      print("Error loading or filling PDF: $e");
     }
   }
 
-  // Method to generate the PDF using form data and images
-  // Future<void> _generatePdf() async {
-  //   try {
-  //     // Load the existing ATC.pdf as the template
-  //     final ByteData bytes = await rootBundle.load('assets/ATC.pdf'); // Ensure ATC.pdf is in assets
-  //     final Uint8List pdfTemplateBytes = bytes.buffer.asUint8List();
+  Future<void> _fillExistingPdfForm(File pdfFile) async {
+  try {
+    // Load the existing PDF document from the file
+    final PdfDocument document = PdfDocument(inputBytes: pdfFile.readAsBytesSync());
 
-  //     // Add a page using the loaded template
-  //     pdf.addPage(
-  //       pw.Page(
-  //         build: (pw.Context context) {
-  //           return pw.Stack(
-  //             children: [
-  //               pw.Image(
-  //                 pw.MemoryImage(pdfTemplateBytes),
-  //                 fit: pw.BoxFit.cover,
-  //                 width: PdfPageFormat.a4.width,
-  //                 height: PdfPageFormat.a4.height,
-  //               ),
-  //               // Overlay the text fields on top of the PDF
-  //               pw.Positioned(
-  //                 left: 100, // Adjust position based on ATC.pdf layout
-  //                 top: 100,
-  //                 child: pw.Text("Site Name: ${widget.submitForm['siteName']}",
-  //                     style: const pw.TextStyle(fontSize: 12)),
-  //               ),
-  //               pw.Positioned(
-  //                 left: 100,
-  //                 top: 150,
-  //                 child: pw.Text("Site Number: ${widget.submitForm['siteNumber']}",
-  //                     style: const pw.TextStyle(fontSize: 12)),
-  //               ),
-  //               pw.Positioned(
-  //                 left: 100,
-  //                 top: 200,
-  //                 child: pw.Text("Contractor: ${widget.submitForm['contractor']}",
-  //                     style: const pw.TextStyle(fontSize: 12)),
-  //               ),
-  //               pw.Positioned(
-  //                 left: 100,
-  //                 top: 250,
-  //                 child: pw.Text("Tech's Initials: ${widget.submitForm['techInitials']}",
-  //                     style: const pw.TextStyle(fontSize: 12)),
-  //               ),
-  //               pw.Positioned(
-  //                 left: 100,
-  //                 top: 300,
-  //                 child: pw.Text("Date: ${widget.submitForm['selectedDate']}",
-  //                     style: const pw.TextStyle(fontSize: 12)),
-  //               ),
-  //               pw.Positioned(
-  //                 left: 100,
-  //                 top: 350,
-  //                 child: pw.Text("Main Comments: ${widget.submitForm['mainComments']}",
-  //                     style: const pw.TextStyle(fontSize: 12)),
-  //               ),
-  //             ],
-  //           );
-  //         },
-  //       ),
-  //     );
+    // Loop through the fields using the count and access fields by index
+    for (int i = 0; i < document.form.fields.count; i++) {
+      var field = document.form.fields[i];
 
-  //     // Add a new page for each photo
-  //     if (widget.submitForm['photos'] != null) {
-  //       List<File> photos = widget.submitForm['photos'];
-  //       for (var photo in photos) {
-  //         final image = pw.MemoryImage(photo.readAsBytesSync());
+      if (field is PdfTextBoxField) {
+        // Handle text box fields
+        switch (field.name) {
+          case 'siteName':
+            field.text = widget.submitForm['siteName'] ?? '';
+            break;
+          case 'siteNumber':
+            field.text = widget.submitForm['siteNumber'] ?? '';
+            break;
+          case 'contractor':
+            field.text = widget.submitForm['contractor'] ?? '';
+            break;
+          case 'techInitials':
+            field.text = widget.submitForm['techInitials'] ?? '';
+            break;
+          case 'selectedDate':
+            field.text = widget.submitForm['selectedDate'] ?? '';
+            break;
+        }
+      } else if (field is PdfCheckBoxField) {
+        // Handle checkbox fields
+        switch (field.name) {
+          case 'mainCheckbox1':
+            field.isChecked = widget.submitForm['mainCheckbox'][0] ?? false;
+            break;
+          case 'mainCheckbox2':
+            field.isChecked = widget.submitForm['mainCheckbox'][1] ?? false;
+            break;
+          case 'mainCheckbox3':
+            field.isChecked = widget.submitForm['mainCheckbox'][2] ?? false;
+            break;
+          // Add more cases if there are additional checkboxes
+        }
+      }
+      // You can handle other field types (e.g., radio buttons) similarly.
+    }
 
-  //         pdf.addPage(
-  //           pw.Page(
-  //             pageFormat: PdfPageFormat.a4,
-  //             build: (pw.Context context) {
-  //               return pw.Center(
-  //                 child: pw.Image(image, width: PdfPageFormat.a4.width, height: PdfPageFormat.a4.height),
-  //               );
-  //             },
-  //           ),
-  //         );
-  //       }
-  //     }
+    // Add photos to the PDF at the end of the file
+    if (widget.submitForm['photos'] != null) {
+      await _addPhotosToPdf(document, widget.submitForm['photos']);
+    }
 
-  //     // Save the generated PDF to a temporary directory
-  //     final output = await getTemporaryDirectory();
-  //     final file = File("${output.path}/generated_site_closeout.pdf");
-  //     await file.writeAsBytes(await pdf.save());
-      
+    // Save the filled PDF to a new file
+    final outputDir = await getTemporaryDirectory();
+    final filledPdfFile = File("${outputDir.path}/filled_act_form_with_photos.pdf");
+    await filledPdfFile.writeAsBytes(await document.save());
 
-  //     setState(() {
-  //       _pdfFile = file;
-  //     });
 
-  //     // Load the PDF document to display it in the app
-  //     await _loadPdfDocument();
-  //   } catch (e) {
-  //     // Log the error
-  //     print("Error generating PDF: $e");
-  //   }
-  // }
+    setState(() {
+      _pdfFile = filledPdfFile;
+      _isLoading = false;
+    });
 
-  // Load the generated PDF file into a PDFDocument to display in the PDF viewer
-  // Future<void> _loadPdfDocument() async {
-  //   if (_pdfFile != null) {
-  //     try {
-  //       PDFDocument doc = await PDFDocument.fromFile(_pdfFile!);
+    // Load the filled PDF for viewing
+    _pdfDocument = await PDFDocument.fromFile(_pdfFile!);
 
-  //       setState(() {
-  //         _pdfDocument = doc;
-  //         _isLoading = false;
-  //       });
-  //     } catch (e) {
-  //       print("Error loading PDF for preview: $e");
-  //     }
-  //   }
-  // }
+    // document.dispose();
+  } catch (e) {
+    print("Error filling PDF: $e");
+  }
+}
 
+  Future<void> _addPhotosToPdf(PdfDocument document, List<File> photos) async {
+    for (var photo in photos) {
+      // Create a new page for each photo
+      PdfPage page = document.pages.add();
+
+      // Load the image from file
+      final Uint8List imageBytes = await photo.readAsBytes();
+      img.Image? decodedImage = img.decodeImage(imageBytes);
+
+      if (decodedImage != null) {
+        // Convert the image to PdfBitmap
+        PdfBitmap pdfImage = PdfBitmap(imageBytes);
+
+        // Get the page dimensions
+        double pageWidth = page.getClientSize().width;
+        double pageHeight = page.getClientSize().height;
+
+        // Calculate the aspect ratio of the image and the page
+        double imageAspectRatio = decodedImage.width / decodedImage.height;
+        double pageAspectRatio = pageWidth / pageHeight;
+
+        double drawWidth, drawHeight;
+
+        // Determine whether to scale by width or height to maintain the aspect ratio
+        if (imageAspectRatio > pageAspectRatio) {
+          // Image is wider than the page, scale by width
+          drawWidth = pageWidth;
+          drawHeight = pageWidth / imageAspectRatio;
+        } else {
+          // Image is taller than the page, scale by height
+          drawHeight = pageHeight;
+          drawWidth = pageHeight * imageAspectRatio;
+        }
+
+        // Calculate the position to center the image on the page
+        double xPosition = (pageWidth - drawWidth) / 2;
+        double yPosition = (pageHeight - drawHeight) / 2;
+
+        // Draw the image on the page, centered and scaled to fit
+        page.graphics.drawImage(
+          pdfImage,
+          Rect.fromLTWH(xPosition, yPosition, drawWidth, drawHeight),
+        );
+      }
+    }
+  }
+
+  // Share the generated PDF
   Future<void> _sharePdf() async {
     if (_pdfFile != null) {
       Share.shareXFiles([XFile(_pdfFile!.path)]);
-     
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No PDF generated yet!')),
@@ -182,26 +180,20 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('PDF Generator'),
-      ),
+      appBar: AppBar(title: const Text('PDF Generator')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+            _isLoading
+                ? const CircularProgressIndicator()
                 : _pdfDocument != null
-                  ? PDFViewer(
-                      document: _pdfDocument!,
-                    )
-                  : const Text('Failed to load PDF'),
-            ),
+                    ? Expanded(child: PDFViewer(document: _pdfDocument!))
+                    : const Text('Failed to load PDF'),
             Padding(
               padding: const EdgeInsets.fromLTRB(0, 8, 0, 36),
               child: ElevatedButton(
-                onPressed: _sharePdf, // Save and share the PDF
+                onPressed: _sharePdf,
                 child: const Text('Share/Save PDF'),
               ),
             ),
