@@ -14,20 +14,19 @@ class SiteCloseoutForm extends StatefulWidget {
 }
 
 class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
-  // Define controllers for text fields
   final TextEditingController _siteNumberController = TextEditingController();
+  final TextEditingController _siteNameController = TextEditingController();
   final TextEditingController _contractorController = TextEditingController();
   final TextEditingController _techInitialsController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
 
-  // Define controllers and checkboxes for the 3 main sections
   final List<TextEditingController> _commentControllers = List.generate(3, (index) => TextEditingController());
+
   final List<bool> _checkboxValues = List.generate(8, (index) => false);
   final List<bool> _checkboxValues2 = List.generate(8, (index) => false);
   final List<bool> _checkboxValues3 = List.generate(10, (index) => false);
 
-  // Image management (You mentioned the photos are handled separately)
-  List<File> _capturedPhotos = []; // Replace with actual photo URL logic
+  List<File> _capturedPhotos = []; 
 
   List<String> checkboxQuestions = [
       'Herbicide applied to compound and exterior compound perimeter',
@@ -63,7 +62,8 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
       'Trees in compound/guy compounds',
       'Cut back clear overgrown access road'
     ];
-
+    
+      
   @override
   void dispose() {
     // Dispose controllers to avoid memory leaks
@@ -95,11 +95,11 @@ Map<String, dynamic> _submitForm() {
 
   final mainCheckbox = _checkboxValues;
   final mainComments = _commentControllers[0].text;
-  final iaiCheckbox = _checkboxValues2; 
+  final iaiCheckbox = _checkboxValues2;
   final iaiComments = _commentControllers[1].text;
-  final ooswCheckbox = _checkboxValues3; 
+  final ooswCheckbox = _checkboxValues3;
   final ooswComments = _commentControllers[2].text;
-  final selectedDate = _selectedDate.toString(); 
+  final selectedDate = _selectedDate.toString();
 
   return {
     'contractor': contractor,
@@ -110,11 +110,13 @@ Map<String, dynamic> _submitForm() {
     'iaiComments': iaiComments,
     'ooswCheckbox': ooswCheckbox,
     'ooswComments': ooswComments,
+    'siteName': _siteNameController.text,
     'selectedDate': selectedDate,
     'photos': _capturedPhotos,
     'siteNumber': _siteNumberController.text,
   };
 }
+
 
 
 
@@ -191,6 +193,15 @@ Map<String, dynamic> _submitForm() {
               'Site Information',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _siteNameController,
+              decoration: const InputDecoration(
+                labelText: 'Site Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
             const SizedBox(height: 10),
             TextField(
               controller: _siteNumberController,

@@ -48,51 +48,67 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
     }
   }
 
+  Map<String, dynamic> _mapPdfFields(Map<String, dynamic> formData) {
+  return {
+    'Text1': formData['siteName'], // For site number
+    'Text2': formData['siteNumber'],  // For contractor
+    'Text3': formData['contractor'], // For tech initials
+    'Text4': formData['techInitials'], // For selected date
+    'Text5': formData['selectedDate'], // For main comments
+    'Text6': '0',  // For IAI comments
+    'Text7': formData['ooswComments'], // If there's more form data, map it here
+    'Comments': formData['mainComments'], // Another comment field
+    'Comments_3': formData['iaiComments'], // For OOSW comments
+    'Check Box1': formData['mainCheckbox'][0], // Checkbox fields
+    'Check Box2': formData['mainCheckbox'][1],
+    'Check Box3': formData['mainCheckbox'][2],
+    'Check Box4': formData['mainCheckbox'][3],
+    'Check Box5': formData['mainCheckbox'][4],
+    'Check Box6': formData['mainCheckbox'][5],
+    'Check Box7': formData['mainCheckbox'][6],
+    'Check Box8': formData['mainCheckbox'][7],
+    'Check Box9': formData['iaiCheckbox'][0],
+    'Check Box10': formData['iaiCheckbox'][1],
+    'Check Box11': formData['iaiCheckbox'][2],
+    'Check Box12': formData['iaiCheckbox'][3],
+    'Check Box13': formData['iaiCheckbox'][4],
+    'Check Box14': formData['iaiCheckbox'][5],
+    'Check Box15': formData['iaiCheckbox'][6],
+    'Check Box16': formData['iaiCheckbox'][7],
+    'Check Box17': formData['ooswCheckbox'][0],
+    'Check Box18': formData['ooswCheckbox'][1],
+    'Check Box19': formData['ooswCheckbox'][2], 
+    'Check Box20': formData['ooswCheckbox'][3],
+    'Check Box21': formData['ooswCheckbox'][4],
+    'Check Box22': formData['ooswCheckbox'][5],
+    'Check Box23': formData['ooswCheckbox'][6],
+    'Check Box24': formData['ooswCheckbox'][7],
+    'Check Box25': formData['ooswCheckbox'][8],
+    'Check Box26': formData['ooswCheckbox'][9],
+  };
+}
+
+
   Future<void> _fillExistingPdfForm(File pdfFile) async {
   try {
     // Load the existing PDF document from the file
     final PdfDocument document = PdfDocument(inputBytes: pdfFile.readAsBytesSync());
 
-    // Loop through the fields using the count and access fields by index
+    // Map form data to PDF fields
+    Map<String, dynamic> mappedFields = _mapPdfFields(widget.submitForm);
+
+    // Loop through the fields and fill based on the mapping
     for (int i = 0; i < document.form.fields.count; i++) {
       var field = document.form.fields[i];
 
-      if (field is PdfTextBoxField) {
-        // Handle text box fields
-        switch (field.name) {
-          case 'siteName':
-            field.text = widget.submitForm['siteName'] ?? '';
-            break;
-          case 'siteNumber':
-            field.text = widget.submitForm['siteNumber'] ?? '';
-            break;
-          case 'contractor':
-            field.text = widget.submitForm['contractor'] ?? '';
-            break;
-          case 'techInitials':
-            field.text = widget.submitForm['techInitials'] ?? '';
-            break;
-          case 'selectedDate':
-            field.text = widget.submitForm['selectedDate'] ?? '';
-            break;
-        }
-      } else if (field is PdfCheckBoxField) {
-        // Handle checkbox fields
-        switch (field.name) {
-          case 'mainCheckbox1':
-            field.isChecked = widget.submitForm['mainCheckbox'][0] ?? false;
-            break;
-          case 'mainCheckbox2':
-            field.isChecked = widget.submitForm['mainCheckbox'][1] ?? false;
-            break;
-          case 'mainCheckbox3':
-            field.isChecked = widget.submitForm['mainCheckbox'][2] ?? false;
-            break;
-          // Add more cases if there are additional checkboxes
-        }
+      if (field is PdfTextBoxField && mappedFields.containsKey(field.name)) {
+        field.text = mappedFields[field.name] ?? ''; // Fill text fields
+      } else if (field is PdfCheckBoxField && mappedFields.containsKey(field.name)) {
+        field.isChecked = mappedFields[field.name] ?? false; // Fill checkbox fields
       }
-      // You can handle other field types (e.g., radio buttons) similarly.
     }
+
+    document.form.flattenAllFields();
 
     // Add photos to the PDF at the end of the file
     if (widget.submitForm['photos'] != null) {
@@ -112,59 +128,40 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
 
     // Load the filled PDF for viewing
     _pdfDocument = await PDFDocument.fromFile(_pdfFile!);
-
-    // document.dispose();
   } catch (e) {
     print("Error filling PDF: $e");
   }
 }
 
+
+
+
   Future<void> _addPhotosToPdf(PdfDocument document, List<File> photos) async {
-    for (var photo in photos) {
-      // Create a new page for each photo
-      PdfPage page = document.pages.add();
+  for (var photo in photos) {
+    // Create a new page for each photo
+    PdfPage page = document.pages.add();
 
-      // Load the image from file
-      final Uint8List imageBytes = await photo.readAsBytes();
-      img.Image? decodedImage = img.decodeImage(imageBytes);
+    // Load the image from file
+    final Uint8List imageBytes = await photo.readAsBytes();
+    img.Image? decodedImage = img.decodeImage(imageBytes);
 
-      if (decodedImage != null) {
-        // Convert the image to PdfBitmap
-        PdfBitmap pdfImage = PdfBitmap(imageBytes);
+    if (decodedImage != null) {
+      // Convert the image to PdfBitmap
+      PdfBitmap pdfImage = PdfBitmap(imageBytes);
 
-        // Get the page dimensions
-        double pageWidth = page.getClientSize().width;
-        double pageHeight = page.getClientSize().height;
+      // Get the page dimensions
+      double pageWidth = page.getClientSize().width;
+      double pageHeight = page.getClientSize().height;
 
-        // Calculate the aspect ratio of the image and the page
-        double imageAspectRatio = decodedImage.width / decodedImage.height;
-        double pageAspectRatio = pageWidth / pageHeight;
-
-        double drawWidth, drawHeight;
-
-        // Determine whether to scale by width or height to maintain the aspect ratio
-        if (imageAspectRatio > pageAspectRatio) {
-          // Image is wider than the page, scale by width
-          drawWidth = pageWidth;
-          drawHeight = pageWidth / imageAspectRatio;
-        } else {
-          // Image is taller than the page, scale by height
-          drawHeight = pageHeight;
-          drawWidth = pageHeight * imageAspectRatio;
-        }
-
-        // Calculate the position to center the image on the page
-        double xPosition = (pageWidth - drawWidth) / 2;
-        double yPosition = (pageHeight - drawHeight) / 2;
-
-        // Draw the image on the page, centered and scaled to fit
-        page.graphics.drawImage(
-          pdfImage,
-          Rect.fromLTWH(xPosition, yPosition, drawWidth, drawHeight),
-        );
-      }
+      // Draw the image on the page, ensuring it covers the full page
+      page.graphics.drawImage(
+        pdfImage,
+        Rect.fromLTWH(0, 0, pageWidth, pageHeight),
+      );
     }
   }
+}
+
 
   // Share the generated PDF
   Future<void> _sharePdf() async {
