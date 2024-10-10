@@ -18,6 +18,7 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
   final TextEditingController _siteNameController = TextEditingController();
   final TextEditingController _contractorController = TextEditingController();
   final TextEditingController _techInitialsController = TextEditingController();
+  final TextEditingController _visitedDaysController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
 
   final List<TextEditingController> _commentControllers = List.generate(3, (index) => TextEditingController());
@@ -90,28 +91,18 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
     }
   }
 Map<String, dynamic> _submitForm() {
-  final contractor = _contractorController.text;
-  final techInitials = _techInitialsController.text;
-
-  final mainCheckbox = _checkboxValues;
-  final mainComments = _commentControllers[0].text;
-  final iaiCheckbox = _checkboxValues2;
-  final iaiComments = _commentControllers[1].text;
-  final ooswCheckbox = _checkboxValues3;
-  final ooswComments = _commentControllers[2].text;
-  final selectedDate = _selectedDate.toString();
-
   return {
-    'contractor': contractor,
-    'techInitials': techInitials,
-    'mainCheckbox': mainCheckbox,
-    'mainComments': mainComments,
-    'iaiCheckbox': iaiCheckbox,
-    'iaiComments': iaiComments,
-    'ooswCheckbox': ooswCheckbox,
-    'ooswComments': ooswComments,
+    'contractor': _contractorController.text,
+    'visitedDays': _visitedDaysController.text,
+    'techInitials': _techInitialsController.text,
+    'mainCheckbox': _checkboxValues,
+    'mainComments': _commentControllers[0].text,
+    'iaiCheckbox': _checkboxValues2,
+    'iaiComments': _commentControllers[1].text,
+    'ooswCheckbox': _checkboxValues3,
+    'ooswComments': _commentControllers[2].text,
     'siteName': _siteNameController.text,
-    'selectedDate': selectedDate,
+    'selectedDate': _selectedDate.toString(),
     'photos': _capturedPhotos,
     'siteNumber': _siteNumberController.text,
   };
@@ -195,44 +186,65 @@ Map<String, dynamic> _submitForm() {
             ),
             const SizedBox(height: 10),
             TextField(
+              maxLength: 40,
               controller: _siteNameController,
               decoration: const InputDecoration(
                 labelText: 'Site Name',
                 border: OutlineInputBorder(),
+                counterText: '',
               ),
             ),
             const SizedBox(height: 20),
-            const SizedBox(height: 10),
             TextField(
+              maxLength: 24,
+              keyboardType: TextInputType.number,
               controller: _siteNumberController,
               decoration: const InputDecoration(
                 labelText: 'Site Number',
                 border: OutlineInputBorder(),
+                counterText: '',
               ),
             ),
             const SizedBox(height: 20),
 
             // Contractor field
             TextField(
+              maxLength: 50,
               controller: _contractorController,
               decoration: const InputDecoration(
                 labelText: 'Contractor',
                 border: OutlineInputBorder(),
+                counterText: '',
               ),
             ),
             const SizedBox(height: 20),
 
             // Tech Initials field
             TextField(
+              maxLength: 3,
               controller: _techInitialsController,
               decoration: const InputDecoration(
                 labelText: 'Tech\'s Initials',
                 border: OutlineInputBorder(),
+                counterText: '',
               ),
             ),
             const SizedBox(height: 20),
 
-            // Date Picker
+            TextField(
+              
+              keyboardType: TextInputType.number,
+              maxLength: 2,
+              controller: _visitedDaysController,
+              decoration: const InputDecoration(
+                
+                labelText: 'Visit # (For current calendar year)',
+                border: OutlineInputBorder(),
+                counterText: '',
+              ),
+              
+            ),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Text("Date: ${_selectedDate.toLocal().toString().split(' ')[0]}"),
@@ -258,7 +270,7 @@ Map<String, dynamic> _submitForm() {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-            const SizedBox(height: 10),
+          
 
             // Questions with Checkboxes and Comments
             ListView.builder(
@@ -280,7 +292,8 @@ Map<String, dynamic> _submitForm() {
                         });
                       },
                     ),
-                    const SizedBox(height: 10),
+                    const Divider(),
+                    
             
                   ],
                 );
@@ -322,7 +335,7 @@ Map<String, dynamic> _submitForm() {
                         });
                       },
                     ),
-                    const SizedBox(height: 10),
+                    const Divider(),
             
                   ],
                 );
@@ -338,6 +351,7 @@ Map<String, dynamic> _submitForm() {
             ),
             const SizedBox(height: 20),
             const Divider(),
+            const SizedBox(height: 20),
             const Text(
               'OOSW that needs attention:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -351,7 +365,7 @@ Map<String, dynamic> _submitForm() {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Example of customized checkbox tile
+                    
                     CheckboxListTile(
                       title: Text(checkboxQuestions3[index]),
                       value: _checkboxValues3[index],
@@ -362,7 +376,7 @@ Map<String, dynamic> _submitForm() {
                         });
                       },
                     ),
-                    const SizedBox(height: 10),
+                    const Divider(),
             
                   ],
                 );
@@ -376,42 +390,36 @@ Map<String, dynamic> _submitForm() {
               ),
               maxLines: 3,
             ),
-            const SizedBox(height: 20),
-            const Divider(),
-
-            const SizedBox(height: 50),
+            const SizedBox(height: 70),
             
           ],
         ),
       ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.fromLTRB(48, 0, 0, 24),
-        child: Align(
-          alignment: Alignment.bottomLeft,
-          child: FloatingActionButton(
-            backgroundColor: Colors.black54,
-            onPressed: () async {
-              // Navigate to TakePictureScreen and pass existing images
-              
-              final result = await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => TakePictureScreen(
-                    existingImages: _capturedPhotos, // Pass existing photos to the screen
-                  ),
+        padding: const EdgeInsets.all(8.0),
+        child: FloatingActionButton(
+          backgroundColor: Colors.black,
+          onPressed: () async {
+            // Navigate to TakePictureScreen and pass existing images
+            
+            final result = await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => TakePictureScreen(
+                  existingImages: _capturedPhotos, // Pass existing photos to the screen
                 ),
-              );
-          
-                if (result != null && result is List<File>) {
-                  setState(() {
-                    // Update _capturedPhotos with the returned images (new + existing)
-                    _capturedPhotos = result;
-                  });
-                }
-                },
-                child: const Icon(Icons.camera_alt, color: Colors.white,),
               ),
-        ),
+            );
+        
+              if (result != null && result is List<File>) {
+                setState(() {
+                  // Update _capturedPhotos with the returned images (new + existing)
+                  _capturedPhotos = result;
+                });
+              }
+              },
+              child: const Icon(Icons.camera_alt, color: Colors.white,),
+            ),
       ),
       
     );

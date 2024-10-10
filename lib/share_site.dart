@@ -55,36 +55,36 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
     'Text3': formData['contractor'], // For tech initials
     'Text4': formData['techInitials'], // For selected date
     'Text5': formData['selectedDate'], // For main comments
-    'Text6': '0',  // For IAI comments
-    'Text7': formData['ooswComments'], // If there's more form data, map it here
+    'Text6': formData['visitedDays'],  // For IAI comments
+    'Text7': formData['iaiComments'], // If there's more form data, map it here
     'Comments': formData['mainComments'], // Another comment field
-    'Comments_3': formData['iaiComments'], // For OOSW comments
-    'Check Box1': formData['mainCheckbox'][0], // Checkbox fields
-    'Check Box2': formData['mainCheckbox'][1],
-    'Check Box3': formData['mainCheckbox'][2],
-    'Check Box4': formData['mainCheckbox'][3],
-    'Check Box5': formData['mainCheckbox'][4],
-    'Check Box6': formData['mainCheckbox'][5],
-    'Check Box7': formData['mainCheckbox'][6],
-    'Check Box8': formData['mainCheckbox'][7],
-    'Check Box9': formData['iaiCheckbox'][0],
-    'Check Box10': formData['iaiCheckbox'][1],
-    'Check Box11': formData['iaiCheckbox'][2],
-    'Check Box12': formData['iaiCheckbox'][3],
-    'Check Box13': formData['iaiCheckbox'][4],
-    'Check Box14': formData['iaiCheckbox'][5],
-    'Check Box15': formData['iaiCheckbox'][6],
-    'Check Box16': formData['iaiCheckbox'][7],
-    'Check Box17': formData['ooswCheckbox'][0],
-    'Check Box18': formData['ooswCheckbox'][1],
-    'Check Box19': formData['ooswCheckbox'][2], 
-    'Check Box20': formData['ooswCheckbox'][3],
-    'Check Box21': formData['ooswCheckbox'][4],
-    'Check Box22': formData['ooswCheckbox'][5],
-    'Check Box23': formData['ooswCheckbox'][6],
-    'Check Box24': formData['ooswCheckbox'][7],
-    'Check Box25': formData['ooswCheckbox'][8],
-    'Check Box26': formData['ooswCheckbox'][9],
+    'Comments_3': formData['ooswComments'], // For OOSW comments
+    'Check Box1': formData['iaiCheckbox'][0], 
+    'Check Box2': formData['iaiCheckbox'][1],
+    'Check Box3': formData['iaiCheckbox'][2],
+    'Check Box4': formData['iaiCheckbox'][3],
+    'Check Box5': formData['iaiCheckbox'][4],
+    'Check Box6': formData['iaiCheckbox'][5],
+    'Check Box7': formData['iaiCheckbox'][6],
+    'Check Box8': formData['iaiCheckbox'][7],
+    'Check Box9': formData['ooswCheckbox'][0],
+    'Check Box10': formData['ooswCheckbox'][1],
+    'Check Box11': formData['ooswCheckbox'][2],
+    'Check Box12': formData['ooswCheckbox'][3],
+    'Check Box13': formData['ooswCheckbox'][4],
+    'Check Box14': formData['ooswCheckbox'][5],
+    'Check Box15': formData['ooswCheckbox'][6],
+    'Check Box16': formData['ooswCheckbox'][7],
+    'Check Box17': formData['ooswCheckbox'][8],
+    'Check Box18': formData['ooswCheckbox'][9],
+    'Check Box19': formData['mainCheckbox'][0], 
+    'Check Box20': formData['mainCheckbox'][1],
+    'Check Box21': formData['mainCheckbox'][2],
+    'Check Box22': formData['mainCheckbox'][3],
+    'Check Box23': formData['mainCheckbox'][4],
+    'Check Box24': formData['mainCheckbox'][5],
+    'Check Box25': formData['mainCheckbox'][6],
+    'Check Box26': formData['mainCheckbox'][7],
   };
 }
 
