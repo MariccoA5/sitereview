@@ -1,10 +1,7 @@
 import 'dart:io';
-
-import 'package:flutter/material.dart';
-
+import 'package:flutter/cupertino.dart'; // Import Cupertino for iOS-style widgets
 import 'package:site_connect/share_site.dart';
 import 'package:site_connect/take_picture.dart';
-
 
 class SiteCloseoutForm extends StatefulWidget {
   const SiteCloseoutForm({super.key});
@@ -27,44 +24,43 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
   final List<bool> _checkboxValues2 = List.generate(8, (index) => false);
   final List<bool> _checkboxValues3 = List.generate(10, (index) => false);
 
-  List<File> _capturedPhotos = []; 
+  List<File> _capturedPhotos = [];
 
   List<String> checkboxQuestions = [
-      'Herbicide applied to compound and exterior compound perimeter',
-      'Small trash items removed from site = (1) 55 gal trash bag',
-      'Vegetation removal & herbicide application around utilities and parking area\n\t- Glyphosate spray rate: 3.22 lb a.e./A. (glyphosate)\n\t- Glyphosate spray height: no higher than twelve (12) inches from ground level',
-      'Marking dye used in herbicide application', 
-      'Leaves blown/raked out of compound', 
-      'Access road serviced (out 3’ back on both sides of the road and herbicide applied)', 
-      'Mow guy paths from compound to anchor pens, where accessible', 
-      'Weed removal/herbicide application on guy pens/anchor points'
-    ];
+    'Herbicide applied to compound and exterior compound perimeter',
+    'Small trash items removed from site = (1) 55 gal trash bag',
+    'Vegetation removal & herbicide application around utilities and parking area\n\t- Glyphosate spray rate: 3.22 lb a.e./A. (glyphosate)\n\t- Glyphosate spray height: no higher than twelve (12) inches from ground level',
+    'Marking dye used in herbicide application',
+    'Leaves blown/raked out of compound',
+    'Access road serviced (out 3’ back on both sides of the road and herbicide applied)',
+    'Mow guy paths from compound to anchor pens, where accessible',
+    'Weed removal/herbicide application on guy pens/anchor points'
+  ];
 
   List<String> checkboxQuestions2 = [
-      'Site’s security compromised (see comments)',
-      'Site ID Sign Missing or illegible/faded',
-      'Major fence damage to compound or guy compound',
-      'Compound or Guy Compound washed out',
-      'Access road washed out',
-      'Vandalism (see comments)',
-      'Bird nest present',
-      'Utilities down or damaged (see comments)'
-    ];
+    'Site’s security compromised (see comments)',
+    'Site ID Sign Missing or illegible/faded',
+    'Major fence damage to compound or guy compound',
+    'Compound or Guy Compound washed out',
+    'Access road washed out',
+    'Vandalism (see comments)',
+    'Bird nest present',
+    'Utilities down or damaged (see comments)'
+  ];
 
   List<String> checkboxQuestions3 = [
-      'Trees within 5’ of tower',
-      'Trees within 5’ of compound',
-      'Excessive Trash/Construction Debris',
-      'Fence/Gate Damage',
-      'Trees in guy paths',
-      'Dead/Hazard trees in danger of falling',
-      'Access Road needs attention',
-      'Cut volunteer trees/brush out of screening landscaping',
-      'Trees in compound/guy compounds',
-      'Cut back clear overgrown access road'
-    ];
-    
-      
+    'Trees within 5’ of tower',
+    'Trees within 5’ of compound',
+    'Excessive Trash/Construction Debris',
+    'Fence/Gate Damage',
+    'Trees in guy paths',
+    'Dead/Hazard trees in danger of falling',
+    'Access Road needs attention',
+    'Cut volunteer trees/brush out of screening landscaping',
+    'Trees in compound/guy compounds',
+    'Cut back clear overgrown access road'
+  ];
+
   @override
   void dispose() {
     // Dispose controllers to avoid memory leaks
@@ -78,11 +74,24 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    final DateTime? picked = await showCupertinoModalPopup<DateTime>(
       context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2024),
-      lastDate: DateTime(2100),
+      builder: (BuildContext context) {
+        return Container(
+          height: 216,
+          padding: const EdgeInsets.only(top: 6.0),
+          color: CupertinoColors.white,
+          child: CupertinoDatePicker(
+            mode: CupertinoDatePickerMode.date,
+            initialDateTime: _selectedDate,
+            onDateTimeChanged: (DateTime newDateTime) {
+              setState(() {
+                _selectedDate = newDateTime;
+              });
+            },
+          ),
+        );
+      },
     );
     if (picked != null && picked != _selectedDate) {
       setState(() {
@@ -90,338 +99,261 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
       });
     }
   }
-Map<String, dynamic> _submitForm() {
-  return {
-    'contractor': _contractorController.text,
-    'visitedDays': _visitedDaysController.text,
-    'techInitials': _techInitialsController.text,
-    'mainCheckbox': _checkboxValues,
-    'mainComments': _commentControllers[0].text,
-    'iaiCheckbox': _checkboxValues2,
-    'iaiComments': _commentControllers[1].text,
-    'ooswCheckbox': _checkboxValues3,
-    'ooswComments': _commentControllers[2].text,
-    'siteName': _siteNameController.text,
-    'selectedDate': _selectedDate.toString(),
-    'photos': _capturedPhotos,
-    'siteNumber': _siteNumberController.text,
-  };
-}
 
-
-
+  Map<String, dynamic> _submitForm() {
+    return {
+      'contractor': _contractorController.text,
+      'visitedDays': _visitedDaysController.text,
+      'techInitials': _techInitialsController.text,
+      'mainCheckbox': _checkboxValues,
+      'mainComments': _commentControllers[0].text,
+      'iaiCheckbox': _checkboxValues2,
+      'iaiComments': _commentControllers[1].text,
+      'ooswCheckbox': _checkboxValues3,
+      'ooswComments': _commentControllers[2].text,
+      'siteName': _siteNameController.text,
+      'selectedDate': _selectedDate.toString(),
+      'photos': _capturedPhotos,
+      'siteNumber': _siteNumberController.text,
+    };
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Site Closeout Form'),
-        leading: IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () {
-            // Clear all text fields and checkboxes
-            _contractorController.clear();
-            _techInitialsController.clear();
+Widget build(BuildContext context) {
+  return CupertinoPageScaffold(
+    navigationBar: CupertinoNavigationBar(
+      middle: const Text('Site Closeout Form'),
+      trailing: CupertinoButton(
+        padding: EdgeInsets.zero,
+        child: const Icon(CupertinoIcons.delete),
+        onPressed: () {
+          // Clear all text fields and checkboxes
+          _contractorController.clear();
+          _techInitialsController.clear();
+          _siteNumberController.clear();
+          for (var controller in _commentControllers) {
+            controller.clear();
+          }
+          setState(() {
+            _capturedPhotos.clear();
             _siteNumberController.clear();
-            for (var controller in _commentControllers) {
-              controller.clear();
-            }
-            setState(() {
-              _capturedPhotos.clear();
-              _siteNumberController.clear();
-              _selectedDate = DateTime.now();
-              _checkboxValues.fillRange(0, 8, false);
-              _checkboxValues2.fillRange(0, 8, false);
-              _checkboxValues3.fillRange(0, 10, false);
-            });
-          
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: () {
-              if (_capturedPhotos.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please take photos before saving the form.')),
-                );
-                return;
-              }
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PdfGeneratorPage(
-                    submitForm: _submitForm(), // Your form data here
-                   
-                  ),
-                ),
-              );
-
-              },
-          ),
-        ],
-      ),
-      body: GestureDetector(
-        onTap: () {
-          FocusScope.of(context).unfocus();
+            _selectedDate = DateTime.now();
+            _checkboxValues.fillRange(0, 8, false);
+            _checkboxValues2.fillRange(0, 8, false);
+            _checkboxValues3.fillRange(0, 10, false);
+          });
         },
-        child: SingleChildScrollView(
+      ),
+      leading: CupertinoButton(
+        padding: EdgeInsets.zero,
+        child: const Icon(CupertinoIcons.share),
+        onPressed: () {
+          if (_capturedPhotos.isEmpty) {
+            showCupertinoDialog(
+              context: context,
+              builder: (context) => CupertinoAlertDialog(
+                title: const Text('Error'),
+                content: const Text('Please take photos before saving the form.'),
+                actions: [
+                  CupertinoDialogAction(
+                    child: const Text('OK'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            );
+            return;
+          }
+          Navigator.push(
+            context,
+            CupertinoPageRoute(
+              builder: (context) => PdfGeneratorPage(
+                submitForm: _submitForm(),
+              ),
+            ),
+          );
+        },
+      ),
+    ),
+    child: GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Display the image from assets at the top
-              Image.asset(
-              'assets/psATLogo.png', 
-              height: 200, // Adjust the size based on your needs
+            Image.asset(
+              'assets/psATLogo.png',
+              height: 200,
               fit: BoxFit.contain,
-
             ),
             const SizedBox(height: 20),
-
-            // Site Information header
             const Text(
               'Site Information',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            TextField(
-              maxLength: 40,
+            CupertinoTextField(
               controller: _siteNameController,
-              decoration: const InputDecoration(
-                labelText: 'Site Name',
-                border: OutlineInputBorder(),
-                counterText: '',
-              ),
+              placeholder: 'Site Name',
             ),
             const SizedBox(height: 20),
-            TextField(
-              maxLength: 24,
-              keyboardType: TextInputType.number,
+            CupertinoTextField(
               controller: _siteNumberController,
-              decoration: const InputDecoration(
-                labelText: 'Site Number',
-                border: OutlineInputBorder(),
-                counterText: '',
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Contractor field
-            TextField(
-              maxLength: 50,
-              controller: _contractorController,
-              decoration: const InputDecoration(
-                labelText: 'Contractor',
-                border: OutlineInputBorder(),
-                counterText: '',
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Tech Initials field
-            TextField(
-              maxLength: 3,
-              controller: _techInitialsController,
-              decoration: const InputDecoration(
-                labelText: 'Tech\'s Initials',
-                border: OutlineInputBorder(),
-                counterText: '',
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            TextField(
-              
+              placeholder: 'Site Number',
               keyboardType: TextInputType.number,
-              maxLength: 2,
-              controller: _visitedDaysController,
-              decoration: const InputDecoration(
-                
-                labelText: 'Visit # (For current calendar year)',
-                border: OutlineInputBorder(),
-                counterText: '',
-              ),
-              
+            ),
+            const SizedBox(height: 20),
+            CupertinoTextField(
+              controller: _contractorController,
+              placeholder: 'Contractor',
+            ),
+            const SizedBox(height: 20),
+            CupertinoTextField(
+              controller: _techInitialsController,
+              placeholder: 'Tech\'s Initials',
             ),
             const SizedBox(height: 20),
             Row(
               children: [
                 Text("Date: ${_selectedDate.toLocal().toString().split(' ')[0]}"),
                 const SizedBox(width: 20),
-                ElevatedButton(
+                CupertinoButton(
+                  child: const Icon(CupertinoIcons.calendar),
                   onPressed: () => _selectDate(context),
-                  child: const Icon(Icons.calendar_month),
                 ),
               ],
             ),
             const SizedBox(height: 20),
-
             Text(
               'Number of photos taken: ${_capturedPhotos.length}',
             ),
             const SizedBox(height: 20),
-
-            // Main SOW header
-            const Padding(
-              padding: EdgeInsets.fromLTRB(8.0, 8, 0, 0),
-              child: Text(
-                'Main SOW:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+            const Text(
+              'Main SOW:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-          
-
-            // Questions with Checkboxes and Comments
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: 8,
-              itemBuilder: (context, index) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Example of customized checkbox tile
-                    CheckboxListTile(
-                      title: Text(checkboxQuestions[index]),
-                      value: _checkboxValues[index],
-  
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _checkboxValues[index] = value ?? false;
-                        });
-                      },
-                    ),
-                    const Divider(),
-                    
-            
-                  ],
-                );
-              },
-            ),
-            TextField(
+            // Customized separations with SizedBox and Container for Cupertino feel
+            ...List.generate(checkboxQuestions.length, (index) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CupertinoSwitch(
+                    value: _checkboxValues[index],
+                    onChanged: (bool value) {
+                      setState(() {
+                        _checkboxValues[index] = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10), // Spacer replacing Divider
+                  Container(
+                    height: 1,
+                    color: CupertinoColors.separator, // Light line separator
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              );
+            }),
+            CupertinoTextField(
               controller: _commentControllers[0],
-              decoration: const InputDecoration(
-                labelText: 'Comments',
-                border: OutlineInputBorder(),
-              ),
+              placeholder: 'Comments',
               maxLines: 3,
             ),
             const SizedBox(height: 20),
-            const Divider(),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
             const Text(
               'Immediate Attention Issues:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: 8,
-              itemBuilder: (context, index) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Example of customized checkbox tile
-                    CheckboxListTile(
-                      title: Text(checkboxQuestions2[index]),
-                      value: _checkboxValues2[index],
-  
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _checkboxValues2[index] = value ?? false;
-                        });
-                      },
-                    ),
-                    const Divider(),
-            
-                  ],
-                );
-              },
-            ),
-            TextField(
+            ...List.generate(checkboxQuestions2.length, (index) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CupertinoSwitch(
+                    value: _checkboxValues2[index],
+                    onChanged: (bool value) {
+                      setState(() {
+                        _checkboxValues2[index] = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10), // Spacer replacing Divider
+                  Container(
+                    height: 1,
+                    color: CupertinoColors.separator, // Light line separator
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              );
+            }),
+            CupertinoTextField(
               controller: _commentControllers[1],
-              decoration: const InputDecoration(
-                labelText: 'Comments',
-                border: OutlineInputBorder(),
-              ),
+              placeholder: 'Comments',
               maxLines: 3,
             ),
-            const SizedBox(height: 20),
-            const Divider(),
             const SizedBox(height: 20),
             const Text(
               'OOSW that needs attention:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    
-                    CheckboxListTile(
-                      title: Text(checkboxQuestions3[index]),
-                      value: _checkboxValues3[index],
-  
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _checkboxValues3[index] = value ?? false;
-                        });
-                      },
-                    ),
-                    const Divider(),
-            
-                  ],
-                );
-              },
-            ),
-            TextField(
+            ...List.generate(checkboxQuestions3.length, (index) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CupertinoSwitch(
+                    value: _checkboxValues3[index],
+                    onChanged: (bool value) {
+                      setState(() {
+                        _checkboxValues3[index] = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 10), // Spacer replacing Divider
+                  Container(
+                    height: 1,
+                    color: CupertinoColors.separator, // Light line separator
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              );
+            }),
+            CupertinoTextField(
               controller: _commentControllers[2],
-              decoration: const InputDecoration(
-                labelText: 'Comments',
-                border: OutlineInputBorder(),
-              ),
+              placeholder: 'Comments',
               maxLines: 3,
             ),
             const SizedBox(height: 70),
-            
+
+            // CupertinoButton at the end
+            CupertinoButton.filled(
+              onPressed: () async {
+                final result = await Navigator.of(context).push(
+                  CupertinoPageRoute(
+                    builder: (context) => TakePictureScreen(
+                      existingImages: _capturedPhotos,
+                    ),
+                  ),
+                );
+
+                if (result != null && result is List<File>) {
+                  setState(() {
+                    _capturedPhotos = result;
+                  });
+                }
+              },
+              child: const Text('Take Photos'),
+            ),
           ],
         ),
       ),
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: FloatingActionButton(
-          backgroundColor: Colors.black,
-          onPressed: () async {
-            // Navigate to TakePictureScreen and pass existing images
-            
-            final result = await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => TakePictureScreen(
-                  existingImages: _capturedPhotos, // Pass existing photos to the screen
-                ),
-              ),
-            );
-        
-              if (result != null && result is List<File>) {
-                setState(() {
-                  // Update _capturedPhotos with the returned images (new + existing)
-                  _capturedPhotos = result;
-                });
-              }
-              },
-              child: const Icon(Icons.camera_alt, color: Colors.white,),
-            ),
-      ),
-      
-    );
-  }
+    ),
+  );
+}
 }
