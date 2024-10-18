@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:provider/provider.dart';
@@ -35,16 +36,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const CupertinoApp(
       debugShowCheckedModeBanner: false,
       title: 'Camera Watermark App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+      theme: CupertinoThemeData(
+        primaryColor: CupertinoColors.activeBlue,
+        barBackgroundColor: CupertinoColors.white,
       ),
-      home: const SiteCloseoutForm(), // No need to pass supabaseClient or camera here
+      home: SiteCloseoutForm(), // No need to pass supabaseClient or camera here
     );
   }
 }
-
-
-
