@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
-import 'package:site_connect/share_site.dart';
-import 'package:site_connect/take_picture.dart';
+import 'package:field_report/share_site.dart';
+import 'package:field_report/take_picture.dart';
 
 class SiteCloseoutForm extends StatefulWidget {
   const SiteCloseoutForm({super.key});
