@@ -8,7 +8,7 @@ import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:site_connect/providers.dart';
+import 'package:field_report/providers.dart';
 
 class TakePictureScreen extends StatefulWidget {
   final List<File>? existingImages;

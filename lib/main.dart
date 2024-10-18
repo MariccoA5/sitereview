@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:provider/provider.dart';
-import 'package:site_connect/at_site_closeout.dart';
+import 'package:field_report/at_site_closeout.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'providers.dart';
 
