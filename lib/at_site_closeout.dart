@@ -158,7 +158,7 @@ Widget build(BuildContext context) {
         ),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
-          child: const Icon(CupertinoIcons.share),
+          child: const Icon(CupertinoIcons.check_mark),
           onPressed: () {
             if (_capturedPhotos.isEmpty) {
               showCupertinoDialog(

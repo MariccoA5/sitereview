@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const CupertinoApp(
       debugShowCheckedModeBanner: false,
-      title: 'Camera Watermark App',
+      title: 'Field Report',
       theme: CupertinoThemeData(
         primaryColor: CupertinoColors.activeBlue,
         barBackgroundColor: CupertinoColors.white,
