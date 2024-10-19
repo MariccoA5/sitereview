@@ -132,13 +132,24 @@ Widget build(BuildContext context) {
           ? CupertinoColors.black
           : CupertinoColors.white,
       middle: const Text('Take Picture'),
+      // Change the checkmark to a delete icon with confirmation
       trailing: CupertinoButton(
         padding: EdgeInsets.zero,
-        onPressed: _finishAndReturnImages,
-        child: const Icon(CupertinoIcons.check_mark),
+        onPressed: () async {
+          _showDeleteConfirmationDialog(); // Show the delete confirmation dialog
+        },
+        child: const Icon(CupertinoIcons.delete),
+      ),
+      // Change the back button to save and return to the previous screen
+      leading: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: () async {
+          await _finishAndReturnImages(); // Save images and go back
+        },
+        child: const Icon(CupertinoIcons.back),
       ),
     ),
-    child: Column( 
+    child: Column(
       children: [
         FutureBuilder<void>(
           future: _initializeControllerFuture,
@@ -155,65 +166,95 @@ Widget build(BuildContext context) {
           },
         ),
         Row(
-  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  children: [
-    
-    Text('Count: ${_capturedImages.length}'),
-    
-    Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: CupertinoButton.filled(
-        onPressed: _captureAndProcessImage,
-        child: const Icon(CupertinoIcons.camera, color: CupertinoColors.white),
-      ),
-    ),
-    
-     const SizedBox(width: 60),
-    
-  ],
-),
-       
-        Expanded(
-  child: Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: GridView.builder(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 1,
-        crossAxisSpacing: 0,
-        mainAxisSpacing: 3,
-      ),
-      // Reverse the list so the newest photo appears first
-      itemCount: _capturedImages.length,
-      itemBuilder: (context, index) {
-        // Display the newest photo first by reversing the index
-        int reverseIndex = _capturedImages.length - 1 - index;
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              CupertinoPageRoute(
-                builder: (context) => ImagePreviewScreen(
-                  image: _capturedImages[reverseIndex],
-                  onDelete: () => _removeImage(_capturedImages[reverseIndex]),
-                ),
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Text('Count: ${_capturedImages.length}'),
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: CupertinoButton.filled(
+                onPressed: _captureAndProcessImage,
+                child: const Icon(CupertinoIcons.camera, color: CupertinoColors.white),
               ),
-            );
-          },
-          child: Image.file(_capturedImages[reverseIndex], fit: BoxFit.fill),
-        );
-      },
-    ),
-  ),
-),
-const SizedBox(height: 20),
+            ),
+            const SizedBox(width: 60),
+          ],
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GridView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 1,
+                crossAxisSpacing: 0,
+                mainAxisSpacing: 3,
+              ),
+              itemCount: _capturedImages.length,
+              itemBuilder: (context, index) {
+                int reverseIndex = _capturedImages.length - 1 - index;
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => ImagePreviewScreen(
+                          image: _capturedImages[reverseIndex],
+                          onDelete: () => _removeImage(_capturedImages[reverseIndex]),
+                        ),
+                      ),
+                    );
+                  },
+                  child: Image.file(_capturedImages[reverseIndex], fit: BoxFit.fill),
+                );
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
       ],
     ),
-  
   );
 }
+
+// Show confirmation dialog for deleting all photos
+void _showDeleteConfirmationDialog() {
+  showCupertinoDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return CupertinoAlertDialog(
+        title: const Text("Delete All Photos?"),
+        content: const Text("Are you sure you want to delete all the photos? This action cannot be undone."),
+        actions: [
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            child: const Text("Delete"),
+            onPressed: () {
+              Navigator.of(context).pop(); // Close dialog
+              _deleteAllPhotos(); // Delete all photos
+            },
+          ),
+          CupertinoDialogAction(
+            child: const Text("Cancel"),
+            onPressed: () {
+              Navigator.of(context).pop(); // Close dialog
+            },
+          ),
+        ],
+      );
+    },
+  );
 }
+
+// Function to delete all photos
+void _deleteAllPhotos() {
+  setState(() {
+    _capturedImages.clear(); // Clear the list of captured images
+  });
+}
+
+}
+
 class ImagePreviewScreen extends StatelessWidget {
   final File image;
   final VoidCallback onDelete;
