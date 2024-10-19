@@ -91,7 +91,9 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
 
   Future<void> _fillExistingPdfForm(File pdfFile) async {
   const int maxRetries = 3;  
-  int retryCount = 0;  
+  int retryCount = 0;
+  
+
 
   setState(() {
     _isLoading = true; 
@@ -121,9 +123,13 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
         await _addPhotosToPdf(document, widget.submitForm['photos']);
       }
 
+      final String siteNumber = mappedFields['Text2'] ?? 'UnknownSite';
+      final String visitedDays = mappedFields['Text6'] ?? 'UnknownVisit';
+      final String year = DateTime.now().year.toString();
+
       // Save the filled PDF to a local file
       final outputDir = await getTemporaryDirectory();
-      final filledPdfFile = File("${outputDir.path}/filled_act_form_with_photos.pdf");
+      final filledPdfFile = File("${outputDir.path}/$siteNumber-Visit$visitedDays-$year.pdf");
       await filledPdfFile.writeAsBytes(await document.save());
 
     

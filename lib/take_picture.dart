@@ -125,84 +125,95 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        backgroundColor: MediaQuery.of(context).platformBrightness == Brightness.dark
-      ? CupertinoColors.black 
-      : CupertinoColors.white,
-        middle: const Text('Take Picture'),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _finishAndReturnImages,
-          child: const Icon(CupertinoIcons.check_mark),
-          
-        ),
+Widget build(BuildContext context) {
+  return CupertinoPageScaffold(
+    navigationBar: CupertinoNavigationBar(
+      backgroundColor: MediaQuery.of(context).platformBrightness == Brightness.dark
+          ? CupertinoColors.black
+          : CupertinoColors.white,
+      middle: const Text('Take Picture'),
+      trailing: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: _finishAndReturnImages,
+        child: const Icon(CupertinoIcons.check_mark),
       ),
-      child: Column(
-        children: [
-          FutureBuilder<void>(
-            future: _initializeControllerFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                return SizedBox(
-                  width: MediaQuery.sizeOf(context).width,
-                  height: MediaQuery.sizeOf(context).height * 0.61,
-                  child: CameraPreview(_controller),
-                );
-              } else {
-                return const Center(child: CupertinoActivityIndicator());
-              }
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: CupertinoButton.filled(
-              onPressed: _captureAndProcessImage,
-              child: const Icon(CupertinoIcons.camera, color: CupertinoColors.white),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.15),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 1,
-                    crossAxisSpacing: 0,
-                    mainAxisSpacing: 3,
-                  ),
-                  itemCount: _capturedImages.length,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                            builder: (context) => ImagePreviewScreen(
-                              image: _capturedImages[index],
-                              onDelete: () => _removeImage(_capturedImages[index]),
-                            ),
-                          ),
-                        );
-                      },
-                      child: Image.file(_capturedImages[index], fit: BoxFit.fill),
-                    );
-                  },
+    ),
+    child: Column( 
+      children: [
+        FutureBuilder<void>(
+          future: _initializeControllerFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              return SizedBox(
+                width: MediaQuery.sizeOf(context).width,
+                height: MediaQuery.sizeOf(context).height * 0.64,
+                child: CameraPreview(_controller),
+              );
+            } else {
+              return const Center(child: CupertinoActivityIndicator());
+            }
+          },
+        ),
+        Row(
+  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  children: [
+    
+    Text('Count: ${_capturedImages.length}'),
+    
+    Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: CupertinoButton.filled(
+        onPressed: _captureAndProcessImage,
+        child: const Icon(CupertinoIcons.camera, color: CupertinoColors.white),
+      ),
+    ),
+    
+     const SizedBox(width: 60),
+    
+  ],
+),
+       
+        Expanded(
+  child: Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: GridView.builder(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 1,
+        crossAxisSpacing: 0,
+        mainAxisSpacing: 3,
+      ),
+      // Reverse the list so the newest photo appears first
+      itemCount: _capturedImages.length,
+      itemBuilder: (context, index) {
+        // Display the newest photo first by reversing the index
+        int reverseIndex = _capturedImages.length - 1 - index;
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              CupertinoPageRoute(
+                builder: (context) => ImagePreviewScreen(
+                  image: _capturedImages[reverseIndex],
+                  onDelete: () => _removeImage(_capturedImages[reverseIndex]),
                 ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+            );
+          },
+          child: Image.file(_capturedImages[reverseIndex], fit: BoxFit.fill),
+        );
+      },
+    ),
+  ),
+),
+const SizedBox(height: 20),
+      ],
+    ),
+  
+  );
 }
-
+}
 class ImagePreviewScreen extends StatelessWidget {
   final File image;
   final VoidCallback onDelete;

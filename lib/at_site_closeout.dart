@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:field_report/share_site.dart';
 import 'package:field_report/take_picture.dart';
@@ -230,37 +231,68 @@ Widget _buildSiteInfoSection() {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
+
+                // Site Name
                 CupertinoTextField(
                   padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
                   controller: _siteNameController,
                   placeholder: 'Site Name',
+                  maxLength: 55, // Restrict to 100 characters
+                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
                 ),
                 const SizedBox(height: 20),
+
+                // Site Number
                 CupertinoTextField(
                   padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
                   controller: _siteNumberController,
                   placeholder: 'Site Number',
                   keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
                 ),
                 const SizedBox(height: 20),
+
+                // Contractor Field
                 CupertinoTextField(
                   padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
                   controller: _contractorController,
                   placeholder: 'Contractor',
+                  maxLength: 55,
+                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
                 ),
                 const SizedBox(height: 20),
+
+                // Tech's Initials Field
                 CupertinoTextField(
                   padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
                   controller: _techInitialsController,
                   placeholder: 'Tech\'s Initials',
+                  maxLength: 3,
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
+                  ],
+                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
                 ),
                 const SizedBox(height: 20),
+
+                // Visited Days Field
                 CupertinoTextField(
                   padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
                   controller: _visitedDaysController,
                   placeholder: 'Visited #',
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly, 
+                    LengthLimitingTextInputFormatter(2),  
+                  ],
+                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
                 ),
                 const SizedBox(height: 20),
+
+                // Date
                 Row(
                   children: [
                     Text("Date: ${_selectedDate.toLocal().toString().split(' ')[0]}"),
@@ -272,6 +304,7 @@ Widget _buildSiteInfoSection() {
                   ],
                 ),
                 const SizedBox(height: 10),
+                // Photo count
                 Row(
                   children: [
                     Text(
@@ -307,6 +340,7 @@ Widget _buildSiteInfoSection() {
     ),
   );
 }
+
 
 
   Widget _buildMainSOWSection() {
@@ -588,3 +622,4 @@ Widget _buildSwipeHint(int currentPage, int totalPages) {
   }
 }
 }
+
