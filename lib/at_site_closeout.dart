@@ -130,7 +130,7 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
 Widget build(BuildContext context) {
   return GestureDetector(
     onTap: () {
-      FocusScope.of(context).unfocus(); // This dismisses the keyboard
+      FocusScope.of(context).unfocus(); // Dismiss the keyboard
     },
     child: CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
@@ -212,7 +212,7 @@ Widget _buildSiteInfoSection() {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded( // Wrap the scrollable content in Expanded
+        Expanded(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,7 +302,7 @@ Widget _buildSiteInfoSection() {
             ),
           ),
         ),
-        _buildSwipeHint(0, 4), // Swipe hint at the bottom
+        _buildSwipeHint(0, 4), 
       ],
     ),
   );
@@ -315,7 +315,7 @@ Widget _buildSiteInfoSection() {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded( // Make the scrollable content take up available space
+        Expanded( 
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,7 +368,7 @@ Widget _buildSiteInfoSection() {
             ),
           ),
         ),
-        _buildSwipeHint(1, 4), // The swipe hint is at the bottom
+        _buildSwipeHint(1, 4), 
       ],
     ),
   );
@@ -381,7 +381,7 @@ Widget _buildSiteInfoSection() {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded( // This makes the content scrollable and take available height
+        Expanded( 
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,7 +435,6 @@ Widget _buildSiteInfoSection() {
             ),
           ),
         ),
-        // Swipe hint stays at the bottom
         _buildSwipeHint(2, 4),
       ],
     ),
@@ -450,7 +449,7 @@ Widget _buildSiteInfoSection() {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded( // Scrollable content wrapped inside Expanded
+        Expanded( 
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -504,7 +503,7 @@ Widget _buildSiteInfoSection() {
             ),
           ),
         ),
-        _buildSwipeHint(3, 4), // Swipe hint fixed at the bottom
+        _buildSwipeHint(3, 4), 
       ],
     ),
   );

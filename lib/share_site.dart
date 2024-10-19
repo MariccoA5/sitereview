@@ -10,7 +10,7 @@ import 'package:flutter/services.dart' as services;
 import 'package:image/image.dart' as img;
 
 class PdfGeneratorPage extends StatefulWidget {
-  final Map<String, dynamic> submitForm; // Form data
+  final Map<String, dynamic> submitForm;
 
   const PdfGeneratorPage({super.key, required this.submitForm});
 
@@ -90,73 +90,95 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
   }
 
   Future<void> _fillExistingPdfForm(File pdfFile) async {
-    const int maxRetries = 3;
-    int retryCount = 0;
+  const int maxRetries = 3;  
+  int retryCount = 0;  
 
-    while (retryCount < maxRetries) {
-      try {
-        final PdfDocument document = PdfDocument(inputBytes: pdfFile.readAsBytesSync());
-        Map<String, dynamic> mappedFields = _mapPdfFields(widget.submitForm);
+  setState(() {
+    _isLoading = true; 
+  });
 
-        for (int i = 0; i < document.form.fields.count; i++) {
-          var field = document.form.fields[i];
+  while (retryCount < maxRetries) {
+    try {
+      final PdfDocument document = PdfDocument(inputBytes: pdfFile.readAsBytesSync());
+      Map<String, dynamic> mappedFields = _mapPdfFields(widget.submitForm);
 
-          if (field is PdfTextBoxField && mappedFields.containsKey(field.name)) {
-            field.text = mappedFields[field.name] ?? '';
-          } else if (field is PdfCheckBoxField && mappedFields.containsKey(field.name)) {
-            field.isChecked = mappedFields[field.name] ?? false;
-          }
+      // Populate PDF fields
+      for (int i = 0; i < document.form.fields.count; i++) {
+        var field = document.form.fields[i];
+
+        if (field is PdfTextBoxField && mappedFields.containsKey(field.name)) {
+          field.text = mappedFields[field.name] ?? '';
+        } else if (field is PdfCheckBoxField && mappedFields.containsKey(field.name)) {
+          field.isChecked = mappedFields[field.name] ?? false;
         }
+      }
 
-        document.form.flattenAllFields();
+      // Flatten the fields after populating them
+      document.form.flattenAllFields();
 
-        if (widget.submitForm['photos'] != null) {
-          await _addPhotosToPdf(document, widget.submitForm['photos']);
-        }
+      // If photos are present, add them to the PDF
+      if (widget.submitForm['photos'] != null) {
+        await _addPhotosToPdf(document, widget.submitForm['photos']);
+      }
 
-        final outputDir = await getTemporaryDirectory();
-        final filledPdfFile = File("${outputDir.path}/filled_act_form_with_photos.pdf");
-        await filledPdfFile.writeAsBytes(await document.save());
+      // Save the filled PDF to a local file
+      final outputDir = await getTemporaryDirectory();
+      final filledPdfFile = File("${outputDir.path}/filled_act_form_with_photos.pdf");
+      await filledPdfFile.writeAsBytes(await document.save());
 
+    
+      setState(() {
+        _pdfFile = filledPdfFile;
+        _isLoading = false;  
+      });
+
+      _pdfDocument = await PDFDocument.fromFile(_pdfFile!);  
+      return; 
+
+    } catch (e) {
+      retryCount++;
+      print("Error filling PDF (Attempt $retryCount): $e");
+
+
+      if (retryCount >= maxRetries) {
         setState(() {
-          _pdfFile = filledPdfFile;
           _isLoading = false;
         });
 
-        _pdfDocument = await PDFDocument.fromFile(_pdfFile!);
-        return; // Success, exit the function
-      } catch (e) {
-        retryCount++;
-        print("Error filling PDF (Attempt $retryCount): $e");
-        if (retryCount >= maxRetries) {
-          print("Max retries reached. PDF generation failed.");
-          setState(() {
-            _isLoading = false;
-          });
-          _showErrorDialog("Failed to generate PDF after multiple attempts.");
-        } else {
-          await Future.delayed(Duration(seconds: 1 * retryCount)); // Exponential backoff
-        }
+
+        _showRetryDialog("Failed to generate PDF after multiple attempts.");
+      } else {
+        await Future.delayed(Duration(seconds: 1 * retryCount));  
       }
     }
   }
+}
 
-  void _showErrorDialog(String message) {
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Error'),
-        content: Text(message),
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            child: const Text('OK'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
-    );
-  }
+
+  void _showRetryDialog(String message) {
+  showCupertinoDialog(
+    context: context,
+    builder: (context) => CupertinoAlertDialog(
+      title: const Text('Error'),
+      content: Text(message),
+      actions: [
+        CupertinoDialogAction(
+          isDefaultAction: true,
+          child: const Text('Retry'),
+          onPressed: () {
+            Navigator.of(context).pop(); // Close the dialog
+            _loadPdfFromAssets(); // Retry loading the PDF
+          },
+        ),
+        CupertinoDialogAction(
+          child: const Text('Cancel'),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+    ),
+  );
+}
+
 
   Future<void> _addPhotosToPdf(PdfDocument document, List<File> photos) async {
     for (var photo in photos) {
@@ -198,10 +220,25 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
     }
   }
 
+  Widget _showErrorDialogAndRetry() {
+  // Delay to let the widget tree settle before showing the dialog
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!_isLoading && _pdfDocument == null) {
+      _showRetryDialog("Failed to load PDF. Would you like to retry?");
+    }
+  });
+
+  return const SizedBox(); // Return an empty widget while the dialog is displayed
+}
+
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
+        backgroundColor: MediaQuery.of(context).platformBrightness == Brightness.dark
+      ? CupertinoColors.black 
+      : CupertinoColors.white, 
         middle: const Text('PDF Generator'),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
@@ -211,24 +248,18 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
       ),
       child: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _isLoading
-                ? const CupertinoActivityIndicator()
-                : _pdfDocument != null
-                    ? Expanded(
-                        child: PDFViewer(document: _pdfDocument!),
-                      )
-                    : const Text('Failed to load PDF'),
-            // Padding(
-            //   padding: const EdgeInsets.fromLTRB(0, 8, 0, 36),
-            //   child: CupertinoButton.filled(
-            //     onPressed: _sharePdf,
-            //     child: const Text('Share/Save PDF'),
-            //   ),
-            // ),
-          ],
-        ),
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    _isLoading
+        ? const CupertinoActivityIndicator()
+        : _pdfDocument != null
+            ? Expanded(
+                child: PDFViewer(document: _pdfDocument!),
+              )
+            : _showErrorDialogAndRetry(), // Call the method to show error dialog
+  ],
+),
+
       ),
     );
   }

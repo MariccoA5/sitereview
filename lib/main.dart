@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:provider/provider.dart';
 import 'package:field_report/at_site_closeout.dart';
@@ -43,7 +42,7 @@ class MyApp extends StatelessWidget {
         primaryColor: CupertinoColors.activeBlue,
         barBackgroundColor: CupertinoColors.white,
       ),
-      home: SiteCloseoutForm(), // No need to pass supabaseClient or camera here
+      home: SiteCloseoutForm(), 
     );
   }
 }
