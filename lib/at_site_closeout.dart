@@ -134,6 +134,9 @@ Widget build(BuildContext context) {
     },
     child: CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
+        backgroundColor: MediaQuery.of(context).platformBrightness == Brightness.dark
+          ? CupertinoColors.black
+          : CupertinoColors.white,
         middle: const Text('Site Closeout Form'),
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
