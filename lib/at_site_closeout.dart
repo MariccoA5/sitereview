@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:field_report/share_site.dart';
 import 'package:field_report/take_picture.dart';
 
+
 class SiteCloseoutForm extends StatefulWidget {
   const SiteCloseoutForm({super.key});
 
@@ -133,6 +134,7 @@ Widget build(BuildContext context) {
     onTap: () {
       FocusScope.of(context).unfocus(); // Dismiss the keyboard
     },
+
     child: CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         backgroundColor: MediaQuery.of(context).platformBrightness == Brightness.dark
@@ -144,66 +146,94 @@ Widget build(BuildContext context) {
           child: const Icon(CupertinoIcons.delete),
           onPressed: () {
             setState(() {
-              _contractorController.clear();
-              _techInitialsController.clear();
-              _siteNumberController.clear();
-              _siteNameController.clear();
-              _visitedDaysController.clear();
-              for (var controller in _commentControllers) {
-                controller.clear();
-              }
-              _capturedPhotos.clear();
-              _selectedDate = DateTime.now();
-              _checkboxValues.fillRange(0, 8, false);
-              _checkboxValues2.fillRange(0, 8, false);
-              _checkboxValues3.fillRange(0, 10, false);
+              // Clear all the text fields and reset states
+              _initialLoad();
+              
             });
           },
         ),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          child: const Icon(CupertinoIcons.check_mark),
-          onPressed: () {
-            if (_capturedPhotos.isEmpty) {
-              showCupertinoDialog(
-                context: context,
-                builder: (context) => CupertinoAlertDialog(
-                  title: const Text('No Photos'),
-                  content: const Text('Photos are required to complete the form.'),
-                  actions: [
-                    CupertinoDialogAction(
-                      child: const Text('OK'),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              child: const Icon(CupertinoIcons.exclamationmark_circle),
+              onPressed: () {
+                // Open bug report dialog
+                showCupertinoDialog(
+                  context: context,
+                  builder: (context) => CupertinoAlertDialog(
+                    title: const Text('Bug Report'),
+                    content: const Text('Describe the issue you faced.'),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: const Text('Submit'),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // Add functionality for submitting a bug report here
+                        },
+                      ),
+                      CupertinoDialogAction(
+                        child: const Text('Cancel'),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              child: const Icon(CupertinoIcons.check_mark),
+              onPressed: () {
+                if (_capturedPhotos.isEmpty) {
+                  showCupertinoDialog(
+                    context: context,
+                    builder: (context) => CupertinoAlertDialog(
+                      title: const Text('No Photos'),
+                      content: const Text('Photos are required to complete the form.'),
+                      actions: [
+                        CupertinoDialogAction(
+                          child: const Text('OK'),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-              return;
-            }
-            Navigator.push(
-              context,
-              CupertinoPageRoute(
-                builder: (context) => PdfGeneratorPage(
-                  submitForm: _submitForm(),
-                ),
-              ),
-            );
-          },
+                  );
+                  return;
+                }
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                    builder: (context) => PdfGeneratorPage(
+                      submitForm: _submitForm(),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
-      child: PageView(
-        children: [
-          _buildSiteInfoSection(),
-          _buildMainSOWSection(),
-          _buildImmediateAttentionSection(),
-          _buildOOSWSection(),
-        ],
+      child:
+        PageView(
+          children: [
+            _buildSiteInfoSection(),
+            _buildMainSOWSection(),
+            _buildImmediateAttentionSection(),
+            _buildOOSWSection(),
+          ],
+        ),
+          
+        
       ),
-    ),
-  );
+    );
 }
+
 
 
   // Site Information Section
@@ -264,6 +294,20 @@ Widget _buildSiteInfoSection() {
                 ),
                 const SizedBox(height: 20),
 
+                // Visited Days Field
+                CupertinoTextField(
+                  padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
+                  controller: _visitedDaysController,
+                  placeholder: 'Visited #',
+                  keyboardType: TextInputType.number,
+                  maxLength: 2,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,   
+                  ],
+                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
+                ),
+                const SizedBox(height: 20),
+
                 // Tech's Initials Field
                 CupertinoTextField(
                   padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
@@ -273,20 +317,6 @@ Widget _buildSiteInfoSection() {
                   textCapitalization: TextCapitalization.characters,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
-                  ],
-                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
-                ),
-                const SizedBox(height: 20),
-
-                // Visited Days Field
-                CupertinoTextField(
-                  padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
-                  controller: _visitedDaysController,
-                  placeholder: 'Visited #',
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly, 
-                    LengthLimitingTextInputFormatter(2),  
                   ],
                   decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
                 ),
@@ -336,6 +366,7 @@ Widget _buildSiteInfoSection() {
             ),
           ),
         ),
+        
       ],
     ),
   );
@@ -621,5 +652,50 @@ Widget _buildSwipeHint(int currentPage, int totalPages) {
     );
   }
 }
+
+  void _initialLoad() {
+    _contractorController.clear();
+    _techInitialsController.clear();
+    _siteNumberController.clear();
+    _siteNameController.clear();
+    _visitedDaysController.clear();
+    for (var controller in _commentControllers) {
+      controller.clear();
+    }
+    _capturedPhotos.clear();
+    _selectedDate = DateTime.now();
+    _checkboxValues.fillRange(0, 8, false);
+    _checkboxValues2.fillRange(0, 8, false);
+    _checkboxValues3.fillRange(0, 10, false);
+  }
 }
 
+class CloseKeyboardButton extends StatelessWidget {
+  const CloseKeyboardButton({super.key});
+  
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      bottom: MediaQuery.of(context).viewInsets.bottom + 10, // Just above the keyboard
+      left: 0,
+      right: 0,
+      child: Center(
+        child: GestureDetector(
+          onVerticalDragUpdate: (details) {
+            if (details.primaryDelta! > 7) {
+              FocusScope.of(context).unfocus(); // Close the keyboard on drag
+            }
+          },
+          child: CupertinoButton(
+            color: CupertinoColors.systemGrey,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: const Text('Close Keyboard', style: TextStyle(color: CupertinoColors.white)),
+            onPressed: () {
+              FocusScope.of(context).unfocus();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}

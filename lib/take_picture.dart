@@ -132,21 +132,21 @@ Widget build(BuildContext context) {
           ? CupertinoColors.black
           : CupertinoColors.white,
       middle: const Text('Take Picture'),
-      // Change the checkmark to a delete icon with confirmation
+
       trailing: CupertinoButton(
         padding: EdgeInsets.zero,
         onPressed: () async {
-          _showDeleteConfirmationDialog(); // Show the delete confirmation dialog
+          _showDeleteConfirmationDialog(); 
         },
         child: const Icon(CupertinoIcons.delete),
       ),
-      // Change the back button to save and return to the previous screen
+
       leading: CupertinoButton(
         padding: EdgeInsets.zero,
         onPressed: () async {
-          await _finishAndReturnImages(); // Save images and go back
+          await _finishAndReturnImages(); 
         },
-        child: const Icon(CupertinoIcons.back),
+        child: const Icon(CupertinoIcons.check_mark),
       ),
     ),
     child: Column(
