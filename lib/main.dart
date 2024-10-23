@@ -1,7 +1,8 @@
+import 'package:field_report/history_page.dart';
+import 'package:field_report/profile_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:camera/camera.dart';
 import 'package:provider/provider.dart';
-import 'package:field_report/at_site_closeout.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'providers.dart';
 import 'package:feedback/feedback.dart';
@@ -43,14 +44,42 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const CupertinoApp(
+    return CupertinoApp(
       debugShowCheckedModeBanner: false,
       title: 'Field Report',
-      theme: CupertinoThemeData(
+      theme: const CupertinoThemeData(
         primaryColor: CupertinoColors.activeBlue,
-        barBackgroundColor: CupertinoColors.white,
       ),
-      home: SiteCloseoutForm(),
+      home: CupertinoTabScaffold(
+        tabBar: CupertinoTabBar(
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.today),
+              label: 'Reports',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.person),
+              label: 'Profile',
+            ),
+          ],
+        ),
+        tabBuilder: (context, index) {
+          switch (index) {
+            case 0:
+              return CupertinoTabView(
+                builder: (context) => const HistoryPage(),
+              );
+            case 1:
+              return CupertinoTabView(
+                builder: (context) => const ProfilePage(),
+              );
+            default:
+              return CupertinoTabView(
+                builder: (context) => const HistoryPage(),
+              );
+          }
+        },
+      ),
     );
   }
 }

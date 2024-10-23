@@ -29,6 +29,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
   syncfusion_flutter_pdf: ^21.2.4
   feedback: ^3.1.0
+  connectivity_plus: ^6.1.0
   
 
 dev_dependencies:

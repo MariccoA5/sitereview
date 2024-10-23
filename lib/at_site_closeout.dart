@@ -1,10 +1,10 @@
 import 'dart:io';
+import 'package:field_report/history_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:field_report/share_site.dart';
 import 'package:field_report/take_picture.dart';
-
 
 class SiteCloseoutForm extends StatefulWidget {
   const SiteCloseoutForm({super.key});
@@ -21,7 +21,8 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
   final TextEditingController _visitedDaysController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
 
-  final List<TextEditingController> _commentControllers = List.generate(3, (index) => TextEditingController());
+  final List<TextEditingController> _commentControllers =
+      List.generate(3, (index) => TextEditingController());
 
   final List<bool> _checkboxValues = List.generate(8, (index) => false);
   final List<bool> _checkboxValues2 = List.generate(8, (index) => false);
@@ -79,36 +80,55 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showCupertinoModalPopup<DateTime>(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          height: 216,
-          padding: const EdgeInsets.only(top: 6.0),
-          color: CupertinoColors.white,
-          child: CupertinoDatePicker(
-            mode: CupertinoDatePickerMode.date,
-            initialDateTime: _selectedDate,
-            onDateTimeChanged: (DateTime newDateTime) {
-              setState(() {
-                _selectedDate = newDateTime;
-              });
-            },
-          ),
-        );
-      },
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
+  DateTime tempPickedDate = _selectedDate; // Temporary variable
+
+  await showCupertinoModalPopup<void>(
+    context: context,
+    builder: (BuildContext context) {
+      return Container(
+        height: 260,
+        color: CupertinoColors.systemBackground.resolveFrom(context),
+        child: Column(
+          children: [
+            // Toolbar with a "Done" button
+            Container(
+              height: 44,
+              alignment: Alignment.centerRight,
+              child: CupertinoButton(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                onPressed: () {
+                  setState(() {
+                    _selectedDate = tempPickedDate;
+                  });
+                  Navigator.of(context).pop(); // Close the modal
+                },
+                child: const Text('Done'),
+              ),
+            ),
+            // The date picker
+            SizedBox(
+              height: 216,
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.date,
+                initialDateTime: _selectedDate,
+                onDateTimeChanged: (DateTime newDateTime) {
+                  tempPickedDate = newDateTime; // Update temp variable
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
 
   String formatDate(DateTime date) {
-  final DateFormat formatter = DateFormat('yyyy-MM-dd'); // Specify the format you want
-  return formatter.format(date).toString();
-}
+    final DateFormat formatter =
+        DateFormat('yyyy-MM-dd'); // Specify the format you want
+    return formatter.format(date).toString();
+  }
 
   Map<String, dynamic> _submitForm() {
     return {
@@ -129,98 +149,93 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      FocusScope.of(context).unfocus(); // Dismiss the keyboard
-    },
-
-    child: CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        backgroundColor: MediaQuery.of(context).platformBrightness == Brightness.dark
-          ? CupertinoColors.black
-          : CupertinoColors.white,
-        middle: const Text('Site Closeout Form'),
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          child: const Icon(CupertinoIcons.delete),
-          onPressed: () {
-            setState(() {
-              // Clear all the text fields and reset states
-              _initialLoad();
-              
-            });
-          },
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              child: const Icon(CupertinoIcons.exclamationmark_circle),
-              onPressed: () {
-                // Open bug report dialog
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus(); // Dismiss the keyboard
+      },
+      child: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          backgroundColor:
+              MediaQuery.of(context).platformBrightness == Brightness.dark
+                  ? CupertinoColors.black
+                  : CupertinoColors.white,
+          middle: const Text('Site Closeout'),
+          leading: CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: const Icon(CupertinoIcons.back),
+            onPressed: () {
+              setState(() {
                 showCupertinoDialog(
                   context: context,
                   builder: (context) => CupertinoAlertDialog(
-                    title: const Text('Bug Report'),
-                    content: const Text('Describe the issue you faced.'),
+                    title: const Text("Erase All Data?"),
+                    content: const Text(
+                        "Are you sure you want to delete all the forms data? This action cannot be undone."),
                     actions: [
                       CupertinoDialogAction(
-                        child: const Text('Submit'),
+                        isDestructiveAction: true,
+                        child: const Text("Delete"),
                         onPressed: () {
-                          Navigator.pop(context);
-                          // Add functionality for submitting a bug report here
+                          _initialLoad();
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop('deleted');
                         },
                       ),
                       CupertinoDialogAction(
-                        child: const Text('Cancel'),
+                        child: const Text("Cancel"),
                         onPressed: () {
-                          Navigator.pop(context);
+                          Navigator.of(context).pop();
                         },
                       ),
                     ],
                   ),
                 );
-              },
-            ),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              child: const Icon(CupertinoIcons.check_mark),
-              onPressed: () {
-                if (_capturedPhotos.isEmpty) {
-                  showCupertinoDialog(
-                    context: context,
-                    builder: (context) => CupertinoAlertDialog(
-                      title: const Text('No Photos'),
-                      content: const Text('Photos are required to complete the form.'),
-                      actions: [
-                        CupertinoDialogAction(
-                          child: const Text('OK'),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
+                return;
+              });
+            },
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              
+              CupertinoButton(
+                padding: EdgeInsets.zero,
+                child: const Icon(CupertinoIcons.check_mark),
+                onPressed: () {
+                  if (_capturedPhotos.isEmpty) {
+                    showCupertinoDialog(
+                      context: context,
+                      builder: (context) => CupertinoAlertDialog(
+                        title: const Text('No Photos'),
+                        content: const Text(
+                            'Photos are required to complete the form.'),
+                        actions: [
+                          CupertinoDialogAction(
+                            child: const Text('OK'),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                    return;
+                  }
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                      builder: (context) => PdfGeneratorPage(
+                        submitForm: _submitForm(),
+                      ),
                     ),
                   );
-                  return;
-                }
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(
-                    builder: (context) => PdfGeneratorPage(
-                      submitForm: _submitForm(),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
+                },
+              ),
+            ],
+          ),
         ),
-      ),
-      child:
-        PageView(
+        child: PageView(
           children: [
             _buildSiteInfoSection(),
             _buildMainSOWSection(),
@@ -228,19 +243,13 @@ Widget build(BuildContext context) {
             _buildOOSWSection(),
           ],
         ),
-          
-        
       ),
     );
-}
-
-
+  }
 
   // Site Information Section
-Widget _buildSiteInfoSection() {
-  return Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: Column(
+  Widget _buildSiteInfoSection() {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
@@ -251,7 +260,7 @@ Widget _buildSiteInfoSection() {
                 Center(
                   child: Image.asset(
                     'assets/GRC.png',
-                    height: 200,
+                    height: 164,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -261,56 +270,69 @@ Widget _buildSiteInfoSection() {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
-
+    
                 // Site Name
                 CupertinoTextField(
-                  padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6.0, vertical: 12.0),
                   controller: _siteNameController,
                   placeholder: 'Site Name',
                   maxLength: 55, // Restrict to 100 characters
-                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: CupertinoColors.systemGrey),
+                      borderRadius: BorderRadius.circular(5)),
                 ),
                 const SizedBox(height: 20),
-
+    
                 // Site Number
                 CupertinoTextField(
-                  padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6.0, vertical: 12.0),
                   controller: _siteNumberController,
                   placeholder: 'Site Number',
                   keyboardType: TextInputType.number,
                   maxLength: 6,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: CupertinoColors.systemGrey),
+                      borderRadius: BorderRadius.circular(5)),
                 ),
                 const SizedBox(height: 20),
-
+    
                 // Contractor Field
                 CupertinoTextField(
-                  padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6.0, vertical: 12.0),
                   controller: _contractorController,
                   placeholder: 'Contractor',
                   maxLength: 55,
-                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: CupertinoColors.systemGrey),
+                      borderRadius: BorderRadius.circular(5)),
                 ),
                 const SizedBox(height: 20),
-
+    
                 // Visited Days Field
                 CupertinoTextField(
-                  padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6.0, vertical: 12.0),
                   controller: _visitedDaysController,
                   placeholder: 'Visited #',
                   keyboardType: TextInputType.number,
                   maxLength: 2,
                   inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,   
+                    FilteringTextInputFormatter.digitsOnly,
                   ],
-                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: CupertinoColors.systemGrey),
+                      borderRadius: BorderRadius.circular(5)),
                 ),
                 const SizedBox(height: 20),
-
+    
                 // Tech's Initials Field
                 CupertinoTextField(
-                  padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 6.0, vertical: 12.0),
                   controller: _techInitialsController,
                   placeholder: 'Tech\'s Initials',
                   maxLength: 3,
@@ -318,14 +340,17 @@ Widget _buildSiteInfoSection() {
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
                   ],
-                  decoration: BoxDecoration(border: Border.all(color: CupertinoColors.systemGrey), borderRadius: BorderRadius.circular(5)),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: CupertinoColors.systemGrey),
+                      borderRadius: BorderRadius.circular(5)),
                 ),
                 const SizedBox(height: 20),
-
+    
                 // Date
                 Row(
                   children: [
-                    Text("Date: ${_selectedDate.toLocal().toString().split(' ')[0]}"),
+                    Text(
+                        "Date: ${_selectedDate.toLocal().toString().split(' ')[0]}"),
                     const SizedBox(width: 10),
                     CupertinoButton(
                       child: const Icon(CupertinoIcons.calendar),
@@ -351,7 +376,7 @@ Widget _buildSiteInfoSection() {
                             ),
                           ),
                         );
-
+    
                         if (result != null && result is List<File>) {
                           setState(() {
                             _capturedPhotos = result;
@@ -366,292 +391,283 @@ Widget _buildSiteInfoSection() {
             ),
           ),
         ),
-        
       ],
-    ),
-  );
-}
-
-
+    );
+  }
 
   Widget _buildMainSOWSection() {
-  return Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded( 
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Main SOW:',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 15),
-                ...List.generate(checkboxQuestions.length, (index) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              checkboxQuestions[index],
-                              style: const TextStyle(fontSize: 16),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Main SOW:',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 15),
+                  ...List.generate(checkboxQuestions.length, (index) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                checkboxQuestions[index],
+                                style: const TextStyle(fontSize: 16),
+                              ),
                             ),
-                          ),
-                          CupertinoSwitch(
-                            value: _checkboxValues[index],
-                            onChanged: (bool value) {
-                              setState(() {
-                                _checkboxValues[index] = value;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        height: 1,
-                        color: CupertinoColors.separator,
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                  );
-                }),
-                const SizedBox(height: 10),
-                CupertinoTextField(
-                  controller: _commentControllers[0],
-                  placeholder: 'Comments',
-                  maxLines: 4,
-                  keyboardType: TextInputType.text,
-                ),
-                const SizedBox(height: 30),
-                _buildSwipeHint(1, 4), 
-              ],
+                            CupertinoSwitch(
+                              value: _checkboxValues[index],
+                              onChanged: (bool value) {
+                                setState(() {
+                                  _checkboxValues[index] = value;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          height: 1,
+                          color: CupertinoColors.separator,
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    );
+                  }),
+                  const SizedBox(height: 10),
+                  CupertinoTextField(
+                    controller: _commentControllers[0],
+                    placeholder: 'Comments',
+                    maxLines: 4,
+                    keyboardType: TextInputType.text,
+                  ),
+                  const SizedBox(height: 30),
+                  _buildSwipeHint(1, 4),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
+        ],
+      ),
+    );
+  }
 
   Widget _buildImmediateAttentionSection() {
-  return Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded( 
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Immediate Attention Issues:',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 15),
-                ...List.generate(checkboxQuestions2.length, (index) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              checkboxQuestions2[index],
-                              style: const TextStyle(fontSize: 16),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Immediate Attention Issues:',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 15),
+                  ...List.generate(checkboxQuestions2.length, (index) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                checkboxQuestions2[index],
+                                style: const TextStyle(fontSize: 16),
+                              ),
                             ),
-                          ),
-                          CupertinoSwitch(
-                            value: _checkboxValues2[index],
-                            onChanged: (bool value) {
-                              setState(() {
-                                _checkboxValues2[index] = value;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        height: 1,
-                        color: CupertinoColors.separator,
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                  );
-                }),
-                const SizedBox(height: 10),
-                CupertinoTextField(
-                  controller: _commentControllers[1],
-                  placeholder: 'Comments',
-                  maxLines: 4,
-                  keyboardType: TextInputType.text,
-                ),
-                const SizedBox(height: 110),
-                _buildSwipeHint(2, 4),
-              ],
+                            CupertinoSwitch(
+                              value: _checkboxValues2[index],
+                              onChanged: (bool value) {
+                                setState(() {
+                                  _checkboxValues2[index] = value;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          height: 1,
+                          color: CupertinoColors.separator,
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    );
+                  }),
+                  const SizedBox(height: 10),
+                  CupertinoTextField(
+                    controller: _commentControllers[1],
+                    placeholder: 'Comments',
+                    maxLines: 4,
+                    keyboardType: TextInputType.text,
+                  ),
+                  const SizedBox(height: 110),
+                  _buildSwipeHint(2, 4),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
-
+        ],
+      ),
+    );
+  }
 
   Widget _buildOOSWSection() {
-  return Padding(
-    padding: const EdgeInsets.all(16.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded( 
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'OOSW that needs attention:',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 15),
-                ...List.generate(checkboxQuestions3.length, (index) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              checkboxQuestions3[index],
-                              style: const TextStyle(fontSize: 16),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'OOSW that needs attention:',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 15),
+                  ...List.generate(checkboxQuestions3.length, (index) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                checkboxQuestions3[index],
+                                style: const TextStyle(fontSize: 16),
+                              ),
                             ),
-                          ),
-                          CupertinoSwitch(
-                            value: _checkboxValues3[index],
-                            onChanged: (bool value) {
-                              setState(() {
-                                _checkboxValues3[index] = value;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        height: 1,
-                        color: CupertinoColors.separator,
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                  );
-                }),
-                const SizedBox(height: 10),
-                CupertinoTextField(
-                  controller: _commentControllers[2],
-                  placeholder: 'Comments',
-                  maxLines: 4,
-                  keyboardType: TextInputType.text,
-                ),
-                _buildSwipeHint(3, 4), 
-              ],
+                            CupertinoSwitch(
+                              value: _checkboxValues3[index],
+                              onChanged: (bool value) {
+                                setState(() {
+                                  _checkboxValues3[index] = value;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          height: 1,
+                          color: CupertinoColors.separator,
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    );
+                  }),
+                  const SizedBox(height: 10),
+                  CupertinoTextField(
+                    controller: _commentControllers[2],
+                    placeholder: 'Comments',
+                    maxLines: 4,
+                    keyboardType: TextInputType.text,
+                  ),
+                  _buildSwipeHint(3, 4),
+                ],
+              ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSwipeHint(int currentPage, int totalPages) {
+    // Start page: swipe left
+    if (currentPage == 0) {
+      return const Padding(
+        padding: EdgeInsets.fromLTRB(0, 20, 0, 100),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Swipe to continue',
+              style: TextStyle(
+                fontSize: 16,
+                color: CupertinoColors.inactiveGray,
+              ),
+            ),
+            SizedBox(width: 8),
+            Icon(
+              CupertinoIcons.chevron_right,
+              color: CupertinoColors.inactiveGray,
+            ),
+          ],
         ),
-      ],
-    ),
-  );
-}
-
-
-
-Widget _buildSwipeHint(int currentPage, int totalPages) {
-  // Start page: swipe left
-  if (currentPage == 0) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Swipe to continue',
-            style: TextStyle(
-              fontSize: 16,
+      );
+    }
+    // End page: swipe right
+    else if (currentPage == totalPages - 1) {
+      return const Padding(
+        padding: EdgeInsets.fromLTRB(0, 20, 0, 100),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              CupertinoIcons.chevron_left,
               color: CupertinoColors.inactiveGray,
             ),
-          ),
-          SizedBox(width: 8),
-          Icon(
-            CupertinoIcons.chevron_right,
-            color: CupertinoColors.inactiveGray,
-          ),
-        ],
-      ),
-    );
-  }
-  // End page: swipe right
-  else if (currentPage == totalPages - 1) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            CupertinoIcons.chevron_left,
-            color: CupertinoColors.inactiveGray,
-          ),
-          SizedBox(width: 8),
-          Text(
-            'Swipe to go back',
-            style: TextStyle(
-              fontSize: 16,
+            SizedBox(width: 8),
+            Text(
+              'Swipe to go back',
+              style: TextStyle(
+                fontSize: 16,
+                color: CupertinoColors.inactiveGray,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    // Middle pages: Swipe to continue
+    else {
+      return const Padding(
+        padding: EdgeInsets.fromLTRB(0, 20, 0, 100),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              CupertinoIcons.chevron_left,
               color: CupertinoColors.inactiveGray,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-  // Middle pages: Swipe to continue
-  else {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            CupertinoIcons.chevron_left,
-            color: CupertinoColors.inactiveGray,
-          ),
-          SizedBox(width: 8),
-          Text(
-            'Swipe to continue',
-            style: TextStyle(
-              fontSize: 16,
+            SizedBox(width: 8),
+            Text(
+              'Swipe to continue',
+              style: TextStyle(
+                fontSize: 16,
+                color: CupertinoColors.inactiveGray,
+              ),
+            ),
+            SizedBox(width: 8),
+            Icon(
+              CupertinoIcons.chevron_right,
               color: CupertinoColors.inactiveGray,
             ),
-          ),
-          SizedBox(width: 8),
-          Icon(
-            CupertinoIcons.chevron_right,
-            color: CupertinoColors.inactiveGray,
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    }
   }
-}
 
   void _initialLoad() {
     _contractorController.clear();
@@ -670,32 +686,3 @@ Widget _buildSwipeHint(int currentPage, int totalPages) {
   }
 }
 
-class CloseKeyboardButton extends StatelessWidget {
-  const CloseKeyboardButton({super.key});
-  
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      bottom: MediaQuery.of(context).viewInsets.bottom + 10, // Just above the keyboard
-      left: 0,
-      right: 0,
-      child: Center(
-        child: GestureDetector(
-          onVerticalDragUpdate: (details) {
-            if (details.primaryDelta! > 7) {
-              FocusScope.of(context).unfocus(); // Close the keyboard on drag
-            }
-          },
-          child: CupertinoButton(
-            color: CupertinoColors.systemGrey,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            child: const Text('Close Keyboard', style: TextStyle(color: CupertinoColors.white)),
-            onPressed: () {
-              FocusScope.of(context).unfocus();
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}

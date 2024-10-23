@@ -5,6 +5,9 @@ PODS:
     - Flutter
   - camera_avfoundation (0.0.1):
     - Flutter
+  - connectivity_plus (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - Flutter (1.0.0)
   - geocoding_ios (1.0.5):
     - Flutter
@@ -34,6 +37,7 @@ DEPENDENCIES:
   - advance_pdf_viewer (from `.symlinks/plugins/advance_pdf_viewer/ios`)
   - app_links (from `.symlinks/plugins/app_links/ios`)
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
+  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/darwin`)
   - Flutter (from `Flutter`)
   - geocoding_ios (from `.symlinks/plugins/geocoding_ios/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
@@ -53,6 +57,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/app_links/ios"
   camera_avfoundation:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
+  connectivity_plus:
+    :path: ".symlinks/plugins/connectivity_plus/darwin"
   Flutter:
     :path: Flutter
   geocoding_ios:
@@ -80,6 +86,7 @@ SPEC CHECKSUMS:
   advance_pdf_viewer: 5c832f382b4ca84fe735f893b7e91aa830c27d7b
   app_links: e7a6750a915a9e161c58d91bc610e8cd1d4d0ad0
   camera_avfoundation: dd002b0330f4981e1bbcb46ae9b62829237459a4
+  connectivity_plus: 4c41c08fc6d7c91f63bc7aec70ffe3730b04f563
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   geocoding_ios: a389ea40f6f548de6e63006a2e31bf66ff80769a
   geolocator_apple: 6cbaf322953988e009e5ecb481f07efece75c450
