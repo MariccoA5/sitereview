@@ -3,10 +3,9 @@ import 'dart:io';
 import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:field_report/at_site_closeout.dart';
-import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -14,13 +13,19 @@ class FileEntry {
   final String id;
   final String title;
   final String thumbnailPath;
-  bool isOnline; // Indicates if the file is synced online
+  bool isOnline;
+  DateTime timestamp;
+  bool locationAvailable;
+  Position? location;
 
   FileEntry({
     required this.id,
     required this.title,
     required this.thumbnailPath,
     this.isOnline = false,
+    required this.timestamp,
+    this.locationAvailable = false,
+    this.location,
   });
 }
 
@@ -42,8 +47,6 @@ class _HistoryPageState extends State<HistoryPage> {
     _startConnectivityListener();
   }
 
-
-
   Future<void> _loadFileEntries() async {
     List<FileEntry> localFiles = await _loadLocalFiles();
     List<FileEntry> onlineFiles = await _loadOnlineFiles();
@@ -51,6 +54,23 @@ class _HistoryPageState extends State<HistoryPage> {
     setState(() {
       _fileEntries = [...localFiles, ...onlineFiles];
     });
+  }
+
+  void _deleteFile(String filePath) async {
+    try {
+      final file = File(filePath);
+      if (await file.exists()) {
+        await file.delete(); // Delete the file from the file system
+
+        setState(() {
+          // Remove the file from _fileEntries
+          _fileEntries.removeWhere((entry) => entry.id == filePath);
+        });
+      }
+    } catch (e) {
+      print('Error deleting file: $e');
+      // Optionally, show a dialog to notify the user of the error
+    }
   }
 
   Future<void> _startConnectivityListener() async {
@@ -62,6 +82,30 @@ class _HistoryPageState extends State<HistoryPage> {
       }
     });
   }
+
+  Future<void> _updateOfflineFilesWithLocation() async {
+  for (var file in _fileEntries) {
+    if (!file.isOnline && !file.locationAvailable) {
+      try {
+        Position position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high);
+        
+        setState(() {
+          // Update file with location data
+          file.location = position;
+          file.locationAvailable = true;
+          file.isOnline = true; // Mark it as now updated with online data
+        });
+
+        // Optionally, sync this update to cloud storage or database
+        // await _syncFileLocation(file);
+      } catch (e) {
+        print("Error retrieving location for file ${file.id}: $e");
+      }
+    }
+  }
+}
+
 
   Future<void> _syncOfflineFiles() async {
     List<FileEntry> unsyncedFiles =
@@ -83,28 +127,38 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Future<List<FileEntry>> _loadLocalFiles() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final List<FileSystemEntity> files = directory.listSync();
-    List<FileEntry> fileEntries = [];
+  final directory = await getApplicationDocumentsDirectory();
+  final List<FileSystemEntity> files = await directory.list().toList(); // Asynchronous file listing
+  List<FileEntry> fileEntries = [];
 
-    for (var file in files) {
-      if (file is File && file.path.endsWith('.pdf')) {
-        final String fileName = file.path.split('/').last;
+  for (var file in files) {
+    if (file is File && file.path.endsWith('.pdf')) {
+      final String fileName = file.path.split('/').last;
 
-        // You can create a thumbnail or use a placeholder image
-        String thumbnailPath = 'assets/PDFLOGO.png'; // Use an appropriate image
+      // You can create a thumbnail or use a placeholder image
+      String thumbnailPath = 'assets/PDFLOGO.png'; // Placeholder for PDF logo
 
+      try {
+        // Get file's last modified time
+        DateTime lastModified = await file.lastModified(); // Asynchronous call
+
+        // Add file entry
         fileEntries.add(FileEntry(
           id: file.path,
           title: fileName,
           thumbnailPath: thumbnailPath,
-          isOnline: false, // Update this based on your synchronization logic
+          isOnline: false, // Default to false for offline mode
+          timestamp: lastModified, // File's last modified timestamp
         ));
+      } catch (e) {
+        print("Error retrieving last modified time for file ${file.path}: $e");
       }
     }
-
-    return fileEntries;
   }
+
+  return fileEntries;
+}
+
 
   Future<List<FileEntry>> _loadOnlineFiles() async {
     bool isConnected = await _isConnected();
@@ -131,7 +185,8 @@ class _HistoryPageState extends State<HistoryPage> {
     final result = await Navigator.of(context, rootNavigator: true).push(
       CupertinoPageRoute(builder: (context) => const SiteCloseoutForm()),
     );
-    if (result != null && result == 'saved') {
+    //result != null && result == 'saved'
+    if (result == 'saved') {
       setState(() {
         _loadFileEntries(); // Refresh data or change state variables
       });
@@ -188,25 +243,21 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-
   Widget _buildFileCard(FileEntry file) {
     return GestureDetector(
-              onTap: () {
-          // Open the PDF file
-          final result = Navigator.push(
-            context,
-            CupertinoPageRoute(
-              builder: (context) => PdfViewerPage(filePath: file.id),
-            ),
-          );
-          if (result == 'delete') {
-            // A file was deleted, refresh the list
-            setState(() {
-              _loadFileEntries();
-            });
-          }
-        },
+      onTap: () async {
+        // Open the PDF file
+        final result = await Navigator.of(context, rootNavigator: true).push(
+          CupertinoPageRoute(
+            builder: (context) => PdfViewerPage(filePath: file.id),
+          ),
+        );
+        if (result != null && result is String) {
+        _deleteFile(result); // Call the delete method with the file path
+        _loadFileEntries(); // Refresh the file entries
+      }
 
+      },
       child: Container(
         padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0, 0),
         decoration: BoxDecoration(
@@ -221,19 +272,18 @@ class _HistoryPageState extends State<HistoryPage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Text(
-                file.title,
-                style: const TextStyle(fontSize: 16.0),
-                overflow: TextOverflow.ellipsis,
-              ),
+            padding: const EdgeInsets.all(4.0),
+            child: Text(
+              file.title,
+              style: const TextStyle(fontSize: 16.0),
+              overflow: TextOverflow.ellipsis,
             ),
+          ),
           ],
         ),
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -255,11 +305,10 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 }
 
-
 class PdfViewerPage extends StatefulWidget {
   final String filePath;
 
-  const PdfViewerPage({Key? key, required this.filePath}) : super(key: key);
+  const PdfViewerPage({super.key, required this.filePath});
 
   @override
   _PdfViewerPageState createState() => _PdfViewerPageState();
@@ -292,12 +341,12 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
         context: context,
         builder: (BuildContext context) {
           return CupertinoAlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to load PDF.'),
+            title: const Text('Error'),
+            content: const Text('Failed to load PDF.'),
             actions: [
               CupertinoDialogAction(
                 isDefaultAction: true,
-                child: Text('OK'),
+                child: const Text('OK'),
                 onPressed: () {
                   Navigator.of(context).pop(); // Close dialog
                 },
@@ -319,20 +368,20 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
       context: context,
       builder: (BuildContext context) {
         return CupertinoAlertDialog(
-          title: Text('Delete PDF'),
-          content: Text(
+          title: const Text('Delete PDF'),
+          content: const Text(
               'Are you sure you want to delete this PDF? This action cannot be undone.'),
           actions: [
             CupertinoDialogAction(
               isDefaultAction: true,
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop(false); // Return false
               },
             ),
             CupertinoDialogAction(
               isDestructiveAction: true,
-              child: Text('Delete'),
+              child: const Text('Delete'),
               onPressed: () {
                 // Navigator.of(context).pop(); // Close dialog
                 Navigator.of(context).pop(true); // Return true
@@ -344,36 +393,8 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
     );
 
     if (confirm == true) {
-      // Proceed to delete the file
-      try {
-        final file = File(widget.filePath);
-        if (await file.exists()) {
-          await file.delete();
-        }
-
-        Navigator.of(context).pop('delete');
-      } catch (e) {
-        print('Error deleting file: $e');
-        // Show an error message to the user
-        await showCupertinoDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return CupertinoAlertDialog(
-              title: Text('Error'),
-              content: Text('An error occurred while deleting the PDF.'),
-              actions: [
-                CupertinoDialogAction(
-                  isDefaultAction: true,
-                  child: Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      }
+      // Instead of deleting the file here, just return to HistoryPage with confirmation
+      Navigator.of(context).pop(widget.filePath); // Return the filePath to be deleted
     }
   }
 

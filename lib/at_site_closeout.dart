@@ -13,6 +13,14 @@ class SiteCloseoutForm extends StatefulWidget {
 }
 
 class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
+  final FocusNode _firstFocusNode = FocusNode();
+  final FocusNode _secondFocusNode = FocusNode();
+  final FocusNode _thirdFocusNode = FocusNode();
+  final FocusNode _fourthFocusNode = FocusNode();
+  final FocusNode _fifthFocusNode = FocusNode();
+
+
+
   final TextEditingController _siteNumberController = TextEditingController();
   final TextEditingController _siteNameController = TextEditingController();
   final TextEditingController _contractorController = TextEditingController();
@@ -67,6 +75,11 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
   @override
   void dispose() {
     // Dispose controllers to avoid memory leaks
+    _firstFocusNode.dispose();
+    _secondFocusNode.dispose();
+    _thirdFocusNode.dispose();
+    _fourthFocusNode.dispose();
+    _fifthFocusNode.dispose();
     _visitedDaysController.dispose();
     _siteNameController.dispose();
     _contractorController.dispose();
@@ -91,7 +104,6 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
         color: CupertinoColors.systemBackground.resolveFrom(context),
         child: Column(
           children: [
-            // Toolbar with a "Done" button
             Container(
               height: 44,
               alignment: Alignment.centerRight,
@@ -274,6 +286,10 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
     
                 // Site Name
                 CupertinoTextField(
+                  focusNode: _firstFocusNode,
+                  onSubmitted: (_) {
+                    _secondFocusNode.requestFocus();
+                  },
                   padding: const EdgeInsets.symmetric(
                       horizontal: 6.0, vertical: 12.0),
                   controller: _siteNameController,
@@ -287,12 +303,17 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
     
                 // Site Number
                 CupertinoTextField(
+                  focusNode: _secondFocusNode,
+                  onSubmitted: (_) {
+                    _thirdFocusNode.requestFocus();
+                  },
                   padding: const EdgeInsets.symmetric(
                       horizontal: 6.0, vertical: 12.0),
                   controller: _siteNumberController,
                   placeholder: 'Site Number',
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly,],
+                  keyboardType: TextInputType.text,
+                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9-\s]')),
+                  ],
                   decoration: BoxDecoration(
                       border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
                       borderRadius: BorderRadius.circular(0)),
@@ -301,6 +322,10 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
     
                 // Contractor Field
                 CupertinoTextField(
+                  focusNode: _thirdFocusNode,
+                  onSubmitted: (_) {
+                    _fourthFocusNode.requestFocus();
+                  },
                   padding: const EdgeInsets.symmetric(
                       horizontal: 6.0, vertical: 12.0),
                   controller: _contractorController,
@@ -314,6 +339,10 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
     
                 // Visited Days Field
                 CupertinoTextField(
+                  focusNode: _fourthFocusNode,
+                  onSubmitted: (_) {
+                    _fifthFocusNode.requestFocus();
+                  },
                   padding: const EdgeInsets.symmetric(
                       horizontal: 6.0, vertical: 12.0),
                   controller: _visitedDaysController,
@@ -331,6 +360,7 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
     
                 // Tech's Initials Field
                 CupertinoTextField(
+                  focusNode: _fifthFocusNode,
                   padding: const EdgeInsets.symmetric(
                       horizontal: 6.0, vertical: 12.0),
                   controller: _techInitialsController,

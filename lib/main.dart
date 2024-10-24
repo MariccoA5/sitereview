@@ -1,5 +1,5 @@
 import 'package:field_report/history_page.dart';
-import 'package:field_report/profile_page.dart';
+import 'package:field_report/fileupload.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:camera/camera.dart';
 import 'package:provider/provider.dart';
@@ -58,8 +58,8 @@ class MyApp extends StatelessWidget {
               label: 'Reports',
             ),
             BottomNavigationBarItem(
-              icon: Icon(CupertinoIcons.person),
-              label: 'Profile',
+              icon: Icon(CupertinoIcons.upload_circle),
+              label: 'Upload',
             ),
           ],
         ),
@@ -71,7 +71,7 @@ class MyApp extends StatelessWidget {
               );
             case 1:
               return CupertinoTabView(
-                builder: (context) => const ProfilePage(),
+                builder: (context) => const FileUploadPage(),
               );
             default:
               return CupertinoTabView(

@@ -97,51 +97,70 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   Future<File> _processImage(File imageFile) async {
-    final outputPath = await _getNewImagePath();
-    final ByteData data = await rootBundle.load('assets/GRC.png');
-    final Uint8List watermarkBytes = data.buffer.asUint8List();
+  final outputPath = await _getNewImagePath();
+  final ByteData data = await rootBundle.load('assets/GRC.png');
+  final Uint8List watermarkBytes = data.buffer.asUint8List();
 
-    DateTime now = DateTime.now();
-    String formattedDate = DateFormat('yyyy-MM-dd h:mm a').format(now);
+  DateTime now = DateTime.now();
+  String formattedDate = DateFormat('yyyy-MM-dd h:mm a').format(now);
 
-    Position position;
-    String location = '';
-    String addressString = '';
-    String country = '';
-    // 
+  Position position;
+  String location = '';
+  String addressString = '';
+  String country = '';
+  bool isOffline = false;
 
+  try {
+    // Fetch the user location
+    position = await _getUserLocation();
+    location = '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
 
-    try {
-      position = await _getUserLocation();
-      location = '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
-
-      if (await _isConnected()) {
-        Map<String, String> address = await _getAddressFromLatLng(position);
-        addressString =
-            '${address['city']}, ${address['state']}, ${address['zip']}';
-        country = address['country'].toString();
-      } else {
-        addressString = 'Offline - Address Unavailable';
-      }
-    } catch (e) {
-      location = 'Location Unavailable';
-      addressString = 'Address Unavailable';
+    // Check if the device is online
+    if (await _isConnected()) {
+      // Fetch the address from the coordinates if online
+      Map<String, String> address = await _getAddressFromLatLng(position);
+      addressString = '${address['city']}, ${address['state']}, ${address['zip']}';
+      country = address['country'].toString();
+    } else {
+      // If offline, only display the time and lat/long
+      isOffline = true;
+      addressString = '';
+      country = '';
     }
-
-    final command = img.Command()
-      ..decodeImageFile(imageFile.path)
-      ..drawString(formattedDate, font: img.arial24, x: 450, y: 40)
-      ..drawString(location, font: img.arial24, x: 450, y: 65)
-      ..drawString(addressString, font: img.arial24, x: 450, y: 90)
-      ..drawString(country, font: img.arial24, x: 450, y: 115)
-      ..compositeImage(img.Command()..decodeImage(watermarkBytes),
-          dstX: 450, dstY: 1080, blend: img.BlendMode.alpha);
-
-    command.writeToFile(outputPath);
-    await command.executeThread();
-
-    return File(outputPath);
+  } catch (e) {
+    // Handle location or address failures gracefully
+    addressString = '';
+    country = '';
+    isOffline = true;
+    print('Error fetching location or address: $e');
   }
+
+
+  
+
+  // Initialize the image processing command
+  final command = img.Command()
+    ..decodeImageFile(imageFile.path)
+    ..drawString(formattedDate, font: img.arial24, x: 450, y: 40)
+    ..drawString(location, font: img.arial24, x: 450, y: 65);
+
+  // Conditionally display additional information if online
+  if (!isOffline) {
+    command
+      ..drawString(addressString, font: img.arial24, x: 450, y: 90)
+      ..drawString(country, font: img.arial24, x: 450, y: 115);
+  }
+
+  // Add watermark image
+  command.compositeImage(img.Command()..decodeImage(watermarkBytes),
+        dstX: 450, dstY: 1080, blend: img.BlendMode.alpha);
+
+  // Write to file
+  command.writeToFile(outputPath);
+  await command.executeThread();
+
+  return File(outputPath);
+}
 
   Future<String> _getNewImagePath() async {
     final directory = await getTemporaryDirectory();
