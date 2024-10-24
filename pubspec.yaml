@@ -30,6 +30,9 @@ dependencies:
   syncfusion_flutter_pdf: ^21.2.4
   feedback: ^3.1.0
   connectivity_plus: ^6.1.0
+  sqflite: ^2.0.0+3
+  path: ^1.8.0
+ 
   
 
 dev_dependencies:
@@ -46,3 +49,4 @@ flutter:
     - assets/NonVisitedATC.pdf
     - assets/VisitedATC.pdf
     - assets/psATLogo.png
+    - assets/PDFLOGO.png

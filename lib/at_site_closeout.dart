@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:field_report/history_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -78,6 +77,8 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
     }
     super.dispose();
   }
+
+  
 
   Future<void> _selectDate(BuildContext context) async {
   DateTime tempPickedDate = _selectedDate; // Temporary variable
@@ -279,8 +280,8 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
                   placeholder: 'Site Name',
                   maxLength: 55, // Restrict to 100 characters
                   decoration: BoxDecoration(
-                      border: Border.all(color: CupertinoColors.systemGrey),
-                      borderRadius: BorderRadius.circular(5)),
+                      border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
+                      borderRadius: BorderRadius.circular(0)),
                 ),
                 const SizedBox(height: 20),
     
@@ -291,11 +292,10 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
                   controller: _siteNumberController,
                   placeholder: 'Site Number',
                   keyboardType: TextInputType.number,
-                  maxLength: 6,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly,],
                   decoration: BoxDecoration(
-                      border: Border.all(color: CupertinoColors.systemGrey),
-                      borderRadius: BorderRadius.circular(5)),
+                      border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
+                      borderRadius: BorderRadius.circular(0)),
                 ),
                 const SizedBox(height: 20),
     
@@ -307,8 +307,8 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
                   placeholder: 'Contractor',
                   maxLength: 55,
                   decoration: BoxDecoration(
-                      border: Border.all(color: CupertinoColors.systemGrey),
-                      borderRadius: BorderRadius.circular(5)),
+                      border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
+                      borderRadius: BorderRadius.circular(0)),
                 ),
                 const SizedBox(height: 20),
     
@@ -324,8 +324,8 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
                     FilteringTextInputFormatter.digitsOnly,
                   ],
                   decoration: BoxDecoration(
-                      border: Border.all(color: CupertinoColors.systemGrey),
-                      borderRadius: BorderRadius.circular(5)),
+                      border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
+                      borderRadius: BorderRadius.circular(0)),
                 ),
                 const SizedBox(height: 20),
     
@@ -335,14 +335,13 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
                       horizontal: 6.0, vertical: 12.0),
                   controller: _techInitialsController,
                   placeholder: 'Tech\'s Initials',
-                  maxLength: 3,
                   textCapitalization: TextCapitalization.characters,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
                   ],
                   decoration: BoxDecoration(
-                      border: Border.all(color: CupertinoColors.systemGrey),
-                      borderRadius: BorderRadius.circular(5)),
+                      border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
+                      borderRadius: BorderRadius.circular(0)),
                 ),
                 const SizedBox(height: 20),
     
@@ -369,6 +368,7 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
                     CupertinoButton(
                       child: const Icon(CupertinoIcons.photo_camera),
                       onPressed: () async {
+                      
                         final result = await Navigator.of(context).push(
                           CupertinoPageRoute(
                             builder: (context) => TakePictureScreen(
@@ -448,6 +448,7 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
                     controller: _commentControllers[0],
                     placeholder: 'Comments',
                     maxLines: 4,
+                    maxLength: 750,
                     keyboardType: TextInputType.text,
                   ),
                   const SizedBox(height: 30),
@@ -514,6 +515,7 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
                     controller: _commentControllers[1],
                     placeholder: 'Comments',
                     maxLines: 4,
+                    maxLength: 750,
                     keyboardType: TextInputType.text,
                   ),
                   const SizedBox(height: 110),

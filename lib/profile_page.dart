@@ -5,12 +5,12 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
+    return const CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: Text('Profile'),
       ),
       child: Center(
-        child: Text('Profile Page'),
+        child: Text('Profile page coming soon'),
       ),
     );
   }

@@ -61,11 +61,13 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied)
+      if (permission == LocationPermission.denied) {
         return Future.error('Location permissions are denied.');
+      }
     }
-    if (permission == LocationPermission.deniedForever)
+    if (permission == LocationPermission.deniedForever) {
       return Future.error('Location permissions are permanently denied.');
+    }
     return await Geolocator.getCurrentPosition();
   }
 
@@ -105,6 +107,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
     Position position;
     String location = '';
     String addressString = '';
+    String country = '';
     // 
 
 
@@ -116,6 +119,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
         Map<String, String> address = await _getAddressFromLatLng(position);
         addressString =
             '${address['city']}, ${address['state']}, ${address['zip']}';
+        country = address['country'].toString();
       } else {
         addressString = 'Offline - Address Unavailable';
       }
@@ -126,12 +130,12 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
 
     final command = img.Command()
       ..decodeImageFile(imageFile.path)
-      ..drawString(formattedDate, font: img.arial24, x: 460, y: 40)
-      ..drawString(location, font: img.arial24, x: 428, y: 65)
-      ..drawString(addressString, font: img.arial24, x: 460, y: 90)
-      ..drawString('', font: img.arial24, x: 544, y: 115)
+      ..drawString(formattedDate, font: img.arial24, x: 450, y: 40)
+      ..drawString(location, font: img.arial24, x: 450, y: 65)
+      ..drawString(addressString, font: img.arial24, x: 450, y: 90)
+      ..drawString(country, font: img.arial24, x: 450, y: 115)
       ..compositeImage(img.Command()..decodeImage(watermarkBytes),
-          dstX: 435, dstY: 1080, blend: img.BlendMode.alpha);
+          dstX: 450, dstY: 1080, blend: img.BlendMode.alpha);
 
     command.writeToFile(outputPath);
     await command.executeThread();

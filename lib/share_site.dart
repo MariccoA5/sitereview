@@ -130,9 +130,9 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
         final String year = DateTime.now().year.toString();
 
         // Save the filled PDF to a local file
-        final outputDir = await getTemporaryDirectory();
+        final outputDir = await getApplicationDocumentsDirectory();
         final filledPdfFile =
-            File("${outputDir.path}/$siteNumber-Visit$visitedDays-$year.pdf");
+            File("${outputDir.path}/$siteNumber-Visit $visitedDays-$year.pdf");
         await filledPdfFile.writeAsBytes(await document.save());
 
         setState(() {
@@ -204,7 +204,13 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
 
   Future<void> _sharePdf() async {
     if (_pdfFile != null) {
-      Share.shareXFiles([XFile(_pdfFile!.path)]);
+      //save to history page
+
+      await Share.shareXFiles([XFile(_pdfFile!.path)]);
+      Navigator.of(context).pop();
+      Navigator.of(context).pop('saved');
+  
+
     } else {
       showCupertinoDialog(
         context: context,
@@ -254,12 +260,12 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _isLoading
-                ? const CupertinoActivityIndicator()
-                : _pdfDocument != null
-                    ? Expanded(
-                        child: PDFViewer(document: _pdfDocument!),
-                      )
-                    : _showErrorDialogAndRetry(), // Call the method to show error dialog
+              ? const CupertinoActivityIndicator()
+              : _pdfDocument != null
+                ? Expanded(
+                    child: PDFViewer(document: _pdfDocument!),
+                  )
+                : _showErrorDialogAndRetry(), // Call the method to show error dialog
           ],
         ),
       ),
