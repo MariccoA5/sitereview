@@ -267,157 +267,160 @@ class _SiteCloseoutFormState extends State<SiteCloseoutForm> {
       children: [
         Expanded(
           child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Image.asset(
-                    'assets/GRC.png',
-                    height: 164,
-                    fit: BoxFit.contain,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Image.asset(
+                      'assets/GRC.png',
+                      height: 164,
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 40),
-                const Text(
-                  'Site Information',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-    
-                // Site Name
-                CupertinoTextField(
-                  focusNode: _firstFocusNode,
-                  onSubmitted: (_) {
-                    _secondFocusNode.requestFocus();
-                  },
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6.0, vertical: 12.0),
-                  controller: _siteNameController,
-                  placeholder: 'Site Name',
-                  maxLength: 55, // Restrict to 100 characters
-                  decoration: BoxDecoration(
-                      border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
-                      borderRadius: BorderRadius.circular(0)),
-                ),
-                const SizedBox(height: 20),
-    
-                // Site Number
-                CupertinoTextField(
-                  focusNode: _secondFocusNode,
-                  onSubmitted: (_) {
-                    _thirdFocusNode.requestFocus();
-                  },
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6.0, vertical: 12.0),
-                  controller: _siteNumberController,
-                  placeholder: 'Site Number',
-                  keyboardType: TextInputType.text,
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9-\s]')),
-                  ],
-                  decoration: BoxDecoration(
-                      border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
-                      borderRadius: BorderRadius.circular(0)),
-                ),
-                const SizedBox(height: 20),
-    
-                // Contractor Field
-                CupertinoTextField(
-                  focusNode: _thirdFocusNode,
-                  onSubmitted: (_) {
-                    _fourthFocusNode.requestFocus();
-                  },
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6.0, vertical: 12.0),
-                  controller: _contractorController,
-                  placeholder: 'Contractor',
-                  maxLength: 55,
-                  decoration: BoxDecoration(
-                      border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
-                      borderRadius: BorderRadius.circular(0)),
-                ),
-                const SizedBox(height: 20),
-    
-                // Visited Days Field
-                CupertinoTextField(
-                  focusNode: _fourthFocusNode,
-                  onSubmitted: (_) {
-                    _fifthFocusNode.requestFocus();
-                  },
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6.0, vertical: 12.0),
-                  controller: _visitedDaysController,
-                  placeholder: 'Visited #',
-                  keyboardType: TextInputType.number,
-                  maxLength: 2,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                  decoration: BoxDecoration(
-                      border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
-                      borderRadius: BorderRadius.circular(0)),
-                ),
-                const SizedBox(height: 20),
-    
-                // Tech's Initials Field
-                CupertinoTextField(
-                  focusNode: _fifthFocusNode,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 6.0, vertical: 12.0),
-                  controller: _techInitialsController,
-                  placeholder: 'Tech\'s Initials',
-                  textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
-                  ],
-                  decoration: BoxDecoration(
-                      border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
-                      borderRadius: BorderRadius.circular(0)),
-                ),
-                const SizedBox(height: 20),
-    
-                // Date
-                Row(
-                  children: [
-                    Text(
-                        "Date: ${_selectedDate.toLocal().toString().split(' ')[0]}"),
-                    const SizedBox(width: 10),
-                    CupertinoButton(
-                      child: const Icon(CupertinoIcons.calendar),
-                      onPressed: () => _selectDate(context),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Photo count
-                Row(
-                  children: [
-                    Text(
-                      'Number of photos taken: ${_capturedPhotos.length}',
-                    ),
-                    const SizedBox(width: 10),
-                    CupertinoButton(
-                      child: const Icon(CupertinoIcons.photo_camera),
-                      onPressed: () async {
-                      
-                        final result = await Navigator.of(context).push(
-                          CupertinoPageRoute(
-                            builder: (context) => TakePictureScreen(
-                              existingImages: _capturedPhotos,
+                  const SizedBox(height: 40),
+                  const Text(
+                    'Site Information',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  
+                  // Site Name
+                  CupertinoTextField(
+                    focusNode: _firstFocusNode,
+                    onSubmitted: (_) {
+                      _secondFocusNode.requestFocus();
+                    },
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6.0, vertical: 12.0),
+                    controller: _siteNameController,
+                    placeholder: 'Site Name',
+                    maxLength: 55, // Restrict to 100 characters
+                    decoration: BoxDecoration(
+                        border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
+                        borderRadius: BorderRadius.circular(0)),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Site Number
+                  CupertinoTextField(
+                    focusNode: _secondFocusNode,
+                    onSubmitted: (_) {
+                      _thirdFocusNode.requestFocus();
+                    },
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6.0, vertical: 12.0),
+                    controller: _siteNumberController,
+                    placeholder: 'Site Number',
+                    keyboardType: TextInputType.text,
+                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9-\s]')),
+                    ],
+                    decoration: BoxDecoration(
+                        border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
+                        borderRadius: BorderRadius.circular(0)),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Contractor Field
+                  CupertinoTextField(
+                    focusNode: _thirdFocusNode,
+                    onSubmitted: (_) {
+                      _fourthFocusNode.requestFocus();
+                    },
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6.0, vertical: 12.0),
+                    controller: _contractorController,
+                    placeholder: 'Contractor',
+                    maxLength: 55,
+                    decoration: BoxDecoration(
+                        border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
+                        borderRadius: BorderRadius.circular(0)),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Visited Days Field
+                  CupertinoTextField(
+                    focusNode: _fourthFocusNode,
+                    onSubmitted: (_) {
+                      _fifthFocusNode.requestFocus();
+                    },
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6.0, vertical: 12.0),
+                    controller: _visitedDaysController,
+                    placeholder: 'Visited #',
+                    keyboardType: TextInputType.number,
+                    maxLength: 2,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    decoration: BoxDecoration(
+                        border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
+                        borderRadius: BorderRadius.circular(0)),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Tech's Initials Field
+                  CupertinoTextField(
+                    focusNode: _fifthFocusNode,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6.0, vertical: 12.0),
+                    controller: _techInitialsController,
+                    placeholder: 'Tech\'s Initials',
+                    textCapitalization: TextCapitalization.characters,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
+                    ],
+                    decoration: BoxDecoration(
+                        border: Border.all(color: const Color.fromARGB(150, 142, 142, 147)),
+                        borderRadius: BorderRadius.circular(0)),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Date
+                  Row(
+                    children: [
+                      Text(
+                          "Date: ${_selectedDate.toLocal().toString().split(' ')[0]}"),
+                      const SizedBox(width: 10),
+                      CupertinoButton(
+                        child: const Icon(CupertinoIcons.calendar),
+                        onPressed: () => _selectDate(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Photo count
+                  Row(
+                    children: [
+                      Text(
+                        'Number of photos taken: ${_capturedPhotos.length}',
+                      ),
+                      const SizedBox(width: 10),
+                      CupertinoButton(
+                        child: const Icon(CupertinoIcons.photo_camera),
+                        onPressed: () async {
+                        
+                          final result = await Navigator.of(context).push(
+                            CupertinoPageRoute(
+                              builder: (context) => TakePictureScreen(
+                                existingImages: _capturedPhotos,
+                              ),
                             ),
-                          ),
-                        );
-    
-                        if (result != null && result is List<File>) {
-                          setState(() {
-                            _capturedPhotos = result;
-                          });
-                        }
-                      },
-                    ),
-                  ],
-                ),
-                _buildSwipeHint(0, 4),
-              ],
+                          );
+                  
+                          if (result != null && result is List<File>) {
+                            setState(() {
+                              _capturedPhotos = result;
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  _buildSwipeHint(0, 4),
+                ],
+              ),
             ),
           ),
         ),
