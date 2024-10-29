@@ -44,6 +44,7 @@ class _HistoryPageState extends State<HistoryPage> {
   void initState() {
     super.initState();
     _loadFileEntries();
+  
     _startConnectivityListener();
   }
 
@@ -55,6 +56,8 @@ class _HistoryPageState extends State<HistoryPage> {
       _fileEntries = [...localFiles, ...onlineFiles];
     });
   }
+
+
 
   void _deleteFile(String filePath) async {
     try {
@@ -84,28 +87,27 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Future<void> _updateOfflineFilesWithLocation() async {
-  for (var file in _fileEntries) {
-    if (!file.isOnline && !file.locationAvailable) {
-      try {
-        Position position = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.high);
-        
-        setState(() {
-          // Update file with location data
-          file.location = position;
-          file.locationAvailable = true;
-          file.isOnline = true; // Mark it as now updated with online data
-        });
+    for (var file in _fileEntries) {
+      if (!file.isOnline && !file.locationAvailable) {
+        try {
+          Position position = await Geolocator.getCurrentPosition(
+              desiredAccuracy: LocationAccuracy.high);
 
-        // Optionally, sync this update to cloud storage or database
-        // await _syncFileLocation(file);
-      } catch (e) {
-        print("Error retrieving location for file ${file.id}: $e");
+          setState(() {
+            // Update file with location data
+            file.location = position;
+            file.locationAvailable = true;
+            file.isOnline = true; // Mark it as now updated with online data
+          });
+
+          // Optionally, sync this update to cloud storage or database
+          // await _syncFileLocation(file);
+        } catch (e) {
+          print("Error retrieving location for file ${file.id}: $e");
+        }
       }
     }
   }
-}
-
 
   Future<void> _syncOfflineFiles() async {
     List<FileEntry> unsyncedFiles =
@@ -127,38 +129,40 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Future<List<FileEntry>> _loadLocalFiles() async {
-  final directory = await getApplicationDocumentsDirectory();
-  final List<FileSystemEntity> files = await directory.list().toList(); // Asynchronous file listing
-  List<FileEntry> fileEntries = [];
+    final directory = await getApplicationDocumentsDirectory();
+    final List<FileSystemEntity> files =
+        await directory.list().toList(); // Asynchronous file listing
+    List<FileEntry> fileEntries = [];
 
-  for (var file in files) {
-    if (file is File && file.path.endsWith('.pdf')) {
-      final String fileName = file.path.split('/').last;
+    for (var file in files) {
+      if (file is File && file.path.endsWith('.pdf')) {
+        final String fileName = file.path.split('/').last;
 
-      // You can create a thumbnail or use a placeholder image
-      String thumbnailPath = 'assets/PDFLOGO.png'; // Placeholder for PDF logo
+        // You can create a thumbnail or use a placeholder image
+        String thumbnailPath = 'assets/PDFLOGO.png'; // Placeholder for PDF logo
 
-      try {
-        // Get file's last modified time
-        DateTime lastModified = await file.lastModified(); // Asynchronous call
+        try {
+          // Get file's last modified time
+          DateTime lastModified =
+              await file.lastModified(); // Asynchronous call
 
-        // Add file entry
-        fileEntries.add(FileEntry(
-          id: file.path,
-          title: fileName,
-          thumbnailPath: thumbnailPath,
-          isOnline: false, // Default to false for offline mode
-          timestamp: lastModified, // File's last modified timestamp
-        ));
-      } catch (e) {
-        print("Error retrieving last modified time for file ${file.path}: $e");
+          // Add file entry
+          fileEntries.add(FileEntry(
+            id: file.path,
+            title: fileName,
+            thumbnailPath: thumbnailPath,
+            isOnline: false, // Default to false for offline mode
+            timestamp: lastModified, // File's last modified timestamp
+          ));
+        } catch (e) {
+          print(
+              "Error retrieving last modified time for file ${file.path}: $e");
+        }
       }
     }
+
+    return fileEntries;
   }
-
-  return fileEntries;
-}
-
 
   Future<List<FileEntry>> _loadOnlineFiles() async {
     bool isConnected = await _isConnected();
@@ -253,10 +257,9 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
         );
         if (result != null && result is String) {
-        _deleteFile(result); // Call the delete method with the file path
-        _loadFileEntries(); // Refresh the file entries
-      }
-
+          _deleteFile(result); // Call the delete method with the file path
+          _loadFileEntries(); // Refresh the file entries
+        }
       },
       child: Container(
         padding: const EdgeInsets.fromLTRB(8.0, 8.0, 0, 0),
@@ -272,13 +275,13 @@ class _HistoryPageState extends State<HistoryPage> {
               ),
             ),
             Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Text(
-              file.title,
-              style: const TextStyle(fontSize: 16.0),
-              overflow: TextOverflow.ellipsis,
+              padding: const EdgeInsets.all(4.0),
+              child: Text(
+                file.title,
+                style: const TextStyle(fontSize: 16.0),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
           ],
         ),
       ),
@@ -394,7 +397,8 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
 
     if (confirm == true) {
       // Instead of deleting the file here, just return to HistoryPage with confirmation
-      Navigator.of(context).pop(widget.filePath); // Return the filePath to be deleted
+      Navigator.of(context)
+          .pop(widget.filePath); // Return the filePath to be deleted
     }
   }
 

@@ -4,9 +4,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:field_report/providers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'package:path/path.dart' as path;
 
 class FileUploadPage extends StatefulWidget {
@@ -115,31 +115,19 @@ class _FileUploadPageState extends State<FileUploadPage> {
 
       try {
         // Get supabase provider for storage
-        providers = Provider.of<Providers>(context, listen: false);
-        // Upload the file to Supabase Storage
-        final storage = Supabase.instance.client.storage.from('Pdfbucket'); // Replace 'uploads' with your bucket name
+        
 
         // Generate a unique file path or use the file name
         String filePath = 'user_uploads/${DateTime.now().millisecondsSinceEpoch}_${fileName}'; // Example path
 
-        // Upload file
-        await storage.uploadBinary(
-          filePath,
-          await file.readAsBytes(),
-          fileOptions: const FileOptions(
-            cacheControl: '3600',
-            upsert: false, // Set to true to overwrite existing files
-          ),
-        );
+        
 
-        // Optionally, you can get the public URL if the bucket is public
-        final publicUrl = storage.getPublicUrl(filePath);
-
+        
         // Close the uploading dialog
         Navigator.of(context).pop();
 
         // Show success dialog
-        _showSuccessDialog(publicUrl);
+        _showSuccessDialog('fileUrl');
       } catch (e) {
         // Close the uploading dialog
         Navigator.of(context).pop();

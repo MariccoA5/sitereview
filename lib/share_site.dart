@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:camera/camera.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
@@ -8,6 +9,8 @@ import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart' as services;
 import 'package:image/image.dart' as img;
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+
 
 class PdfGeneratorPage extends StatefulWidget {
   final Map<String, dynamic> submitForm;
@@ -26,7 +29,7 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
   @override
   void initState() {
     super.initState();
-    _loadPdfFromAssets(); // Load and fill the existing form from assets
+    _loadPdfFromAssets();
   }
 
   Future<void> _loadPdfFromAssets() async {
@@ -159,6 +162,31 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
     }
   }
 
+  Future<void> _uploadPdfToFirebase() async {
+  if (_pdfFile != null) {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        String uid = user.uid;
+        String fileName = _pdfFile!.path.split('/').last;
+        firebase_storage.Reference storageRef = firebase_storage.FirebaseStorage.instance
+            .ref()
+            .child('pdfs/$uid/$fileName');
+        await storageRef.putFile(_pdfFile!);
+        print('File uploaded to Firebase Storage successfully.');
+      } else {
+        print('No authenticated user.');
+      }
+    } catch (e) {
+      print('Error uploading file to Firebase Storage: $e');
+    }
+  } else {
+    print('No PDF file to upload.');
+  }
+}
+
+
+
   void _showRetryDialog(String message) {
     showCupertinoDialog(
       context: context,
@@ -205,6 +233,7 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
   Future<void> _sharePdf() async {
     if (_pdfFile != null) {
       //save to history page
+      await _uploadPdfToFirebase();
 
       await Share.shareXFiles([XFile(_pdfFile!.path)]);
       Navigator.of(context).pop();
