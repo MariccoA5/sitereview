@@ -23,13 +23,16 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   List<File> _capturedImages = [];
-  late Providers providers;
+  late CameraDescription firstCamera;
 
   @override
   void initState() {
     super.initState();
-    providers = Provider.of<Providers>(context, listen: false);
-    _controller = CameraController(providers.camera, ResolutionPreset.high);
+
+    final providers = Provider.of<Providers>(context, listen: false);
+    firstCamera = providers.camera;
+
+    _controller = CameraController(firstCamera, ResolutionPreset.high);
     _initializeControllerFuture = _controller.initialize();
     if (widget.existingImages != null) {
       _capturedImages = List.from(widget.existingImages!);
@@ -97,70 +100,59 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
   }
 
   Future<File> _processImage(File imageFile) async {
-  final outputPath = await _getNewImagePath();
-  final ByteData data = await rootBundle.load('assets/GRC.png');
-  final Uint8List watermarkBytes = data.buffer.asUint8List();
+    final outputPath = await _getNewImagePath();
+    final ByteData data = await rootBundle.load('assets/GRC.png');
+    final Uint8List watermarkBytes = data.buffer.asUint8List();
 
-  DateTime now = DateTime.now();
-  String formattedDate = DateFormat('yyyy-MM-dd h:mm a').format(now);
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd h:mm a').format(now);
 
-  Position position;
-  String location = '';
-  String addressString = '';
-  String country = '';
-  bool isOffline = false;
+    Position position;
+    String location = '';
+    String addressString = '';
+    String country = '';
+    bool isOffline = false;
 
-  try {
-    // Fetch the user location
-    position = await _getUserLocation();
-    location = '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
+    try {
+      position = await _getUserLocation();
+      location =
+          '${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}';
 
-    // Check if the device is online
-    if (await _isConnected()) {
-      // Fetch the address from the coordinates if online
-      Map<String, String> address = await _getAddressFromLatLng(position);
-      addressString = '${address['city']}, ${address['state']}, ${address['zip']}';
-      country = address['country'].toString();
-    } else {
-      // If offline, only display the time and lat/long
-      isOffline = true;
+      if (await _isConnected()) {
+        Map<String, String> address = await _getAddressFromLatLng(position);
+        addressString = '${address['city']}, ${address['state']}, ${address['zip']}';
+        country = address['country'].toString();
+      } else {
+        isOffline = true;
+        addressString = '';
+        country = '';
+      }
+    } catch (e) {
       addressString = '';
       country = '';
+      isOffline = true;
+      print('Error fetching location or address: $e');
     }
-  } catch (e) {
-    // Handle location or address failures gracefully
-    addressString = '';
-    country = '';
-    isOffline = true;
-    print('Error fetching location or address: $e');
-  }
 
+    final command = img.Command()
+      ..decodeImageFile(imageFile.path)
+      ..drawString(formattedDate, font: img.arial24, x: 450, y: 40)
+      ..drawString(location, font: img.arial24, x: 450, y: 65);
 
-  
+    if (!isOffline) {
+      command
+        ..drawString(addressString, font: img.arial24, x: 450, y: 90)
+        ..drawString(country, font: img.arial24, x: 450, y: 115);
+    }
 
-  // Initialize the image processing command
-  final command = img.Command()
-    ..decodeImageFile(imageFile.path)
-    ..drawString(formattedDate, font: img.arial24, x: 450, y: 40)
-    ..drawString(location, font: img.arial24, x: 450, y: 65);
-
-  // Conditionally display additional information if online
-  if (!isOffline) {
-    command
-      ..drawString(addressString, font: img.arial24, x: 450, y: 90)
-      ..drawString(country, font: img.arial24, x: 450, y: 115);
-  }
-
-  // Add watermark image
-  command.compositeImage(img.Command()..decodeImage(watermarkBytes),
+    command.compositeImage(img.Command()..decodeImage(watermarkBytes),
         dstX: 450, dstY: 1080, blend: img.BlendMode.alpha);
 
-  // Write to file
-  command.writeToFile(outputPath);
-  await command.executeThread();
+    command.writeToFile(outputPath);
+    await command.executeThread();
 
-  return File(outputPath);
-}
+    return File(outputPath);
+  }
 
   Future<String> _getNewImagePath() async {
     final directory = await getTemporaryDirectory();
@@ -175,6 +167,41 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
 
   Future<void> _finishAndReturnImages() async {
     Navigator.pop(context, _capturedImages);
+  }
+
+  void _showDeleteConfirmationDialog() {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: const Text("Delete All Photos?"),
+          content: const Text(
+              "Are you sure you want to delete all the photos? This action cannot be undone."),
+          actions: [
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              child: const Text("Delete"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteAllPhotos();
+              },
+            ),
+            CupertinoDialogAction(
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteAllPhotos() {
+    setState(() {
+      _capturedImages.clear();
+    });
   }
 
   @override
@@ -242,8 +269,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
             ],
           ),
           SizedBox(
-            height: MediaQuery.of(context).size.height *
-                0.25, // Half of previous height
+            height: MediaQuery.of(context).size.height * 0.25,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
@@ -265,8 +291,7 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
                   },
                   child: Container(
                     width: MediaQuery.of(context).size.width / 3.23,
-                    margin: const EdgeInsets.only(
-                        right: 3), // Spacing between images
+                    margin: const EdgeInsets.only(right: 3),
                     child: Image.file(
                       _capturedImages[reverseIndex],
                       fit: BoxFit.cover,
@@ -279,44 +304,6 @@ class _TakePictureScreenState extends State<TakePictureScreen> {
         ],
       ),
     );
-  }
-
-// Show confirmation dialog for deleting all photos
-  void _showDeleteConfirmationDialog() {
-    showCupertinoDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CupertinoAlertDialog(
-          title: const Text("Delete All Photos?"),
-          content: const Text(
-              "Are you sure you want to delete all the photos? This action cannot be undone."),
-          actions: [
-            CupertinoDialogAction(
-              isDestructiveAction: true,
-              child: const Text("Delete"),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-
-                _deleteAllPhotos(); // Delete all photos
-              },
-            ),
-            CupertinoDialogAction(
-              child: const Text("Cancel"),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-// Function to delete all photos
-  void _deleteAllPhotos() {
-    setState(() {
-      _capturedImages.clear(); // Clear the list of captured images
-    });
   }
 }
 

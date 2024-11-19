@@ -2,12 +2,15 @@ import 'dart:io';
 
 import 'package:advance_pdf_viewer/advance_pdf_viewer.dart';
 import 'package:camera/camera.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:field_report/at_site_closeout.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+
+import 'auth_gate.dart';
 
 class FileEntry {
   final String id;
@@ -298,6 +301,16 @@ class _HistoryPageState extends State<HistoryPage> {
           //   onPressed: () {},
           // ),
           middle: const Text('History'),
+          leading: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.of(context).pushReplacement(
+                  CupertinoPageRoute(builder: (context) => const AuthGate()),
+                );
+              },
+              child: const Icon(CupertinoIcons.square_arrow_right),
+            ),
           trailing: CupertinoButton(
             padding: EdgeInsets.zero,
             onPressed: _navigateToCreateReport,

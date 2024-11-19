@@ -232,10 +232,8 @@ class _PdfGeneratorPageState extends State<PdfGeneratorPage> {
 
   Future<void> _sharePdf() async {
     if (_pdfFile != null) {
-      //save to history page
-      await _uploadPdfToFirebase();
-
       await Share.shareXFiles([XFile(_pdfFile!.path)]);
+      await _uploadPdfToFirebase();
       Navigator.of(context).pop();
       Navigator.of(context).pop('saved');
   
